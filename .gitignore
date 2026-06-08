@@ -1,19 +1,28 @@
-# Dependências
+# General Dependencies
 node_modules/
+package-lock.json
 
-# Build
+# Builds & Output
 dist/
+build/
+.angular/
 
-# Variáveis de ambiente — NUNCA versionar
+# Environments
 .env
 .env.local
 .env.*.local
+*.env
 
-# Prisma — gerado automaticamente
+# Prisma & Databases
 src/generated/
+*.db
+*.sqlite
+*.sqlite3
 
-# Uploads de usuários — não versionar
+# Uploads
 uploads/
+/data/
+/db/
 
 # Logs
 logs/

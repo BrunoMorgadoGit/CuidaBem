@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Idoso {
+  id                   Int       @id @default(autoincrement())
+  nome                 String
+  data_nascimento      DateTime?
+  cpf                  String    @unique
+  sexo                 String?
+  peso                 Float?
+  condicoes_medicinais String?
+  criado_em            DateTime  @default(now())
+  atualizado_em        DateTime  @updatedAt
+
+  doencas      IdosoDoenca[]
+  medicamentos Medicamento[]
+  alimentacoes Alimentacao[]
+  uploads      MediaUpload[]
+
+  @@map("idoso")
+}
+
+model Doenca {
+  id          Int     @id @default(autoincrement())
+  nome_doenca String
+  codigo_cid  String?
+  categoria   String?
+
+  idosos IdosoDoenca[]
+
+  @@map("doenca")
+}
+
+model IdosoDoenca {
+  id               Int       @id @default(autoincrement())
+  id_doenca        Int
+  id_idoso         Int
+  data_diagnostico DateTime?
+  observacao       String?
+
+  doenca Doenca @relation(fields: [id_doenca], references: [id], onDelete: Cascade)
+  idoso  Idoso  @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
+
+  @@map("idoso_doenca")
+}
+
+model Medicamento {
+  id                Int     @id @default(autoincrement())
+  id_idoso          Int
+  nome_medicamento  String
+  via_administracao String?
+  frequencia        String?
+  dosagem           String?
+  horario           String?
+  observacao        String?
+
+  idoso Idoso @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
+
+  @@map("medicamento")
+}
+
+model Cuidador {
+  id            Int      @id @default(autoincrement())
+  nome          String
+  email         String   @unique
+  senha_hash    String
+  sexo          String?
+  cpf           String   @unique
+  telefone      String?
+  turno         String?
+  criado_em     DateTime @default(now())
+  atualizado_em DateTime @updatedAt
+
+  acompanhamentos AcompanhamentoCuidador[]
+  alimentacoes    Alimentacao[]
+  uploads         MediaUpload[]
+
+  @@map("cuidador")
+}
+
+model AcompanhamentoCuidador {
+  id            Int          @id @default(autoincrement())
+  id_cuidador   Int
+  humor         String?
+  sono          String?
+  nivel_energia String?
+  observacao    String?
+  dia           DateTime?
+
+  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Cascade)
+
+  @@map("acompanhamento_cuidador")
+}
+
+model Alimentacao {
+  id          Int        @id @default(autoincrement())
+  id_cuidador Int
+  id_idoso    Int
+  refeicao    String?
+  horario     String?
+  quantidade  String?
+  observacao  String?
+
+  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Restrict)
+  idoso    Idoso    @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
+
+  @@map("alimentacao")
+}
+
+model MediaUpload {
+  id             Int       @id @default(autoincrement())
+  id_cuidador    Int
+  nome_original  String
+  caminho        String
+  tipo_mime      String
+  tamanho_bytes  Int
+  tipo_midia     String
+  id_idoso       Int?
+  criado_em      DateTime  @default(now())
+
+  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Cascade)
+  idoso    Idoso?   @relation(fields: [id_idoso], references: [id], onDelete: SetNull)
+
+  @@map("media_upload")
+}
