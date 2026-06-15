@@ -6,7 +6,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './warning-card.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarningCardComponent {
   @Input() title = 'Cuidados importantes';

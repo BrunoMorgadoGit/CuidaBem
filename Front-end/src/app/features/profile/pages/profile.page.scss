@@ -1,0 +1,374 @@
+.privacy-note {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 16px;
+}
+
+.privacy-note strong,
+.privacy-note span {
+  color: var(--text-light);
+}
+
+.privacy-note strong {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.privacy-note span {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.profile-screen {
+  display: grid;
+  width: min(100%, 760px);
+  gap: 16px;
+  justify-self: center;
+}
+
+.profile-summary-card,
+.details-panel,
+.edit-panel {
+  border: 1px solid rgba(var(--color-primary-rgb), 0.1);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 184, 107, 0.12), transparent 32%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.profile-summary-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 17px;
+  overflow: hidden;
+  padding: 30px 22px 22px;
+  text-align: center;
+}
+
+.profile-summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 112px;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.34), transparent 20%),
+    linear-gradient(135deg, #3448d9 0%, #5b35d9 48%, #00b86b 100%);
+  pointer-events: none;
+}
+
+.summary-photo,
+.edit-photo {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 6px solid var(--surface);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 28%, #fff1d6 0 18%, transparent 19%),
+    linear-gradient(145deg, #eaf7ff, #cfe9df 48%, #3448d9);
+  color: var(--text-light);
+  font-weight: 900;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+}
+
+.summary-photo {
+  width: 132px;
+  height: 132px;
+  font-size: 36px;
+}
+
+.edit-photo {
+  width: 98px;
+  height: 98px;
+  flex: 0 0 auto;
+  font-size: 26px;
+}
+
+.summary-photo img,
+.edit-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.summary-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 5px;
+}
+
+.summary-copy span,
+.section-heading span {
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-copy h2,
+.summary-copy p,
+.summary-copy small,
+.section-heading h2 {
+  margin: 0;
+}
+
+.summary-copy h2 {
+  color: var(--text);
+  font-size: 29px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.summary-copy p {
+  color: var(--color-muted-strong);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.summary-copy small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.summary-actions {
+  display: grid;
+  width: min(100%, 360px);
+  gap: 10px;
+}
+
+.edit-main-button {
+  background: #5b35d9;
+  box-shadow: 0 14px 28px rgba(91, 53, 217, 0.2);
+}
+
+.logout-button {
+  border: 1px solid rgba(var(--color-danger-rgb), 0.18);
+  background: rgba(var(--color-danger-rgb), 0.06);
+  color: var(--danger);
+}
+
+.profile-feedback {
+  margin: 0;
+  border: 1px solid rgba(0, 184, 107, 0.18);
+  border-radius: 16px;
+  background: var(--success-light);
+  color: #037144;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.details-panel,
+.edit-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.section-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.section-heading h2 {
+  color: var(--text);
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.details-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(var(--color-primary-rgb), 0.09);
+  border-radius: 22px;
+  background: rgba(248, 250, 255, 0.72);
+  padding: 16px;
+}
+
+.details-card.wide {
+  grid-column: 1 / -1;
+}
+
+.details-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.details-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.details-card dl div {
+  display: grid;
+  gap: 3px;
+}
+
+.details-card dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.details-card dd {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.42;
+}
+
+.edit-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(var(--color-primary-rgb), 0.08);
+  border-radius: 24px;
+  background: rgba(248, 250, 255, 0.7);
+  padding: 14px;
+}
+
+.photo-edit-actions {
+  display: grid;
+  flex: 1;
+  gap: 9px;
+}
+
+.photo-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.photo-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.form-field span {
+  color: var(--color-muted-strong);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 14px 15px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.form-field textarea {
+  min-height: 122px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.form-field input:not(:disabled):hover,
+.form-field textarea:not(:disabled):hover {
+  border-color: rgba(var(--color-primary-rgb), 0.34);
+  background: var(--surface);
+}
+
+.form-field small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.field-error {
+  color: var(--danger) !important;
+}
+
+@media (max-width: 680px) {
+  .profile-screen {
+    width: 100%;
+  }
+
+  .profile-summary-card,
+  .details-panel,
+  .edit-panel {
+    border-radius: 24px;
+  }
+
+  .details-grid,
+  .profile-form,
+  .form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-photo-row {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .photo-edit-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-summary-card {
+    padding: 26px 16px 18px;
+  }
+
+  .summary-photo {
+    width: 116px;
+    height: 116px;
+    font-size: 30px;
+  }
+
+  .summary-copy h2 {
+    font-size: 25px;
+  }
+}

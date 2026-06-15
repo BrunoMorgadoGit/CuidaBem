@@ -3,10 +3,49 @@
     <router-outlet></router-outlet>
   </main>
 
-  <a class="floating-sos" routerLink="/emergency" aria-label="Abrir emergencia">
+  <button type="button" class="floating-sos" (click)="openEmergencyContacts()" aria-label="Abrir emergência SOS">
     <span>☎</span>
     SOS
-  </a>
+  </button>
+
+  <div class="sos-modal-backdrop" *ngIf="emergencyOpen" (click)="closeEmergencyContacts()">
+    <section
+      class="sos-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sosModalTitle"
+      aria-describedby="sosModalDescription"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="sos-modal-header">
+        <span aria-hidden="true">SOS</span>
+        <div>
+          <h2 id="sosModalTitle">Emergência</h2>
+          <p id="sosModalDescription">Escolha um serviço para ligar rapidamente</p>
+        </div>
+        <button type="button" class="sos-modal-close" (click)="closeEmergencyContacts()" aria-label="Fechar emergência">×</button>
+      </header>
+
+      <p class="sos-loading" *ngIf="emergencyLoading">Carregando contatos...</p>
+
+      <div class="sos-contact-list" *ngIf="!emergencyLoading">
+        <article
+          class="sos-contact-card"
+          *ngFor="let contact of emergencyContacts; trackBy: trackByEmergencyContactId"
+          [ngClass]="contact.tone"
+        >
+          <div class="sos-contact-number">{{ contact.number }}</div>
+          <div class="sos-contact-copy">
+            <h3>{{ contact.name }}</h3>
+            <p>{{ contact.detail }}</p>
+          </div>
+          <a class="sos-call-button" [href]="'tel:' + contact.number" [attr.aria-label]="'Ligar para ' + contact.name">
+            Ligar
+          </a>
+        </article>
+      </div>
+    </section>
+  </div>
 
   <app-bottom-navigation></app-bottom-navigation>
 </div>

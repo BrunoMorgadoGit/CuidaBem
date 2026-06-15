@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+try {
+  // Carrega variáveis do arquivo .env nativamente no Node.js
+  process.loadEnvFile();
+} catch (err) {
+  // Ignora se o arquivo .env não existir (comum em produção/Docker)
+}
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('3000').transform((v) => parseInt(v, 10)),

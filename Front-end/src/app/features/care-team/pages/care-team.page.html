@@ -1,0 +1,145 @@
+<app-page-shell
+  theme="home"
+  title="Equipe de Cuidado"
+  subtitle="Pessoas vinculadas ao cuidado deste paciente."
+  icon="EC"
+>
+  <section page-header-extra class="care-team-header-extra">
+    <strong>Paciente cuidado</strong>
+    <span>{{ patient.name }}</span>
+  </section>
+
+  <section class="care-team-screen">
+    <!-- Patient summary card -->
+    <article class="care-team-patient-card" aria-label="Dados do paciente">
+      <div class="patient-avatar">
+        <span>{{ patientInitials }}</span>
+      </div>
+      <div class="patient-info">
+        <span class="patient-label">Paciente cuidado</span>
+        <h2>{{ patient.name }}</h2>
+        <p *ngIf="patient.age">{{ patient.age }} anos</p>
+        <p *ngIf="patient.condition" class="patient-condition">{{ patient.condition }}</p>
+      </div>
+    </article>
+
+    <!-- Feedback message -->
+    <p class="care-team-feedback" *ngIf="feedback">{{ feedback }}</p>
+
+    <!-- Loading state -->
+    <div class="care-team-loading" *ngIf="loading">
+      <span>Carregando equipe...</span>
+    </div>
+
+    <!-- Error state -->
+    <div class="care-team-error" *ngIf="error && !loading">
+      <p>{{ error }}</p>
+      <button type="button" class="btn btn-outline" (click)="loadMembers()">Tentar novamente</button>
+    </div>
+
+    <!-- Members list -->
+    <section class="care-team-members" *ngIf="!loading && !error" aria-label="Lista de cuidadores">
+      <div class="members-header">
+        <div>
+          <span class="members-count">{{ members.length }} membro(s)</span>
+          <h3>Cuidadores vinculados</h3>
+        </div>
+        <button type="button" class="btn btn-primary" (click)="openAdd()">+ Vincular cuidador</button>
+      </div>
+
+      <div class="members-grid">
+        <article
+          class="member-card"
+          *ngFor="let member of members"
+          [class.is-responsible]="isResponsible(member)"
+          [class.is-editing]="editingMemberId === member.id"
+        >
+          <div class="member-avatar">
+            <span>{{ getMemberInitials(member) }}</span>
+          </div>
+
+          <div class="member-info">
+            <h4>{{ member.user?.name || 'Sem nome' }}</h4>
+            <small>{{ member.user?.email }}</small>
+
+            <ng-container *ngIf="editingMemberId !== member.id">
+              <div class="member-role-badge" [ngClass]="member.role">
+                {{ getRoleLabel(member.role) }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="editingMemberId === member.id">
+              <div class="member-edit-role">
+                <select [(ngModel)]="editRole" class="role-select">
+                  <option *ngFor="let opt of roleOptions" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+                <div class="edit-actions">
+                  <button type="button" class="btn btn-sm btn-primary" (click)="saveEdit(member)">Salvar</button>
+                  <button type="button" class="btn btn-sm btn-outline" (click)="cancelEdit()">Cancelar</button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="member-actions" *ngIf="editingMemberId !== member.id">
+            <button
+              type="button"
+              class="btn-icon"
+              title="Editar papel"
+              (click)="startEdit(member)"
+            >✎</button>
+            <button
+              type="button"
+              class="btn-icon btn-danger"
+              title="Remover"
+              *ngIf="canRemove(member)"
+              (click)="removeMember(member)"
+            >✕</button>
+          </div>
+        </article>
+      </div>
+
+      <p class="members-empty" *ngIf="members.length === 0">
+        Nenhum cuidador vinculado. Adicione alguém à equipe de cuidado.
+      </p>
+    </section>
+
+    <!-- Add member modal -->
+    <div class="add-member-backdrop" *ngIf="addOpen" (click)="closeAdd()">
+      <section class="add-member-modal" (click)="$event.stopPropagation()">
+        <header class="add-member-header">
+          <h3>Vincular cuidador</h3>
+          <button type="button" class="btn-close" (click)="closeAdd()">×</button>
+        </header>
+
+        <div class="add-member-body">
+          <label class="form-field">
+            <span>E-mail do cuidador *</span>
+            <input
+              type="email"
+              [(ngModel)]="addEmail"
+              placeholder="cuidador@email.com"
+              [disabled]="addLoading"
+            >
+          </label>
+
+          <label class="form-field">
+            <span>Papel na equipe</span>
+            <select [(ngModel)]="addRole" [disabled]="addLoading" class="role-select">
+              <option *ngFor="let opt of roleOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </label>
+
+          <p class="add-member-error" *ngIf="addError">{{ addError }}</p>
+        </div>
+
+        <footer class="add-member-footer">
+          <button type="button" class="btn btn-outline" (click)="closeAdd()" [disabled]="addLoading">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="submitAdd()" [disabled]="addLoading">
+            {{ addLoading ? 'Vinculando...' : 'Vincular cuidador' }}
+          </button>
+        </footer>
+      </section>
+    </div>
+  </section>
+</app-page-shell>

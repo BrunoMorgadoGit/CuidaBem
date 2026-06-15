@@ -1,12 +1,21 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
+import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { WellnessService } from '../services/wellness.service';
 import { WellnessPage } from './wellness.page';
 
 function createPage(): WellnessPage {
   const injector = Injector.create({
-    providers: [WellnessService]
+    providers: [
+      WellnessService,
+      {
+        provide: AuthSessionService,
+        useValue: {
+          clearSession: () => undefined
+        }
+      }
+    ]
   });
 
   return runInInjectionContext(injector, () => new WellnessPage());

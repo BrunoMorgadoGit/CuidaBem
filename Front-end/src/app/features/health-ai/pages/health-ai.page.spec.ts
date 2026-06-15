@@ -1,7 +1,9 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { ChangeDetectorRef, Injector, runInInjectionContext } from '@angular/core';
 import { describe, expect, it, vi } from 'vitest';
 
 import { HealthAiService } from '../services/health-ai.service';
+import { ImageUploadService } from '../../../core/services/image-upload.service';
+import { HealthAiAnalysisService } from '../services/health-ai-analysis.service';
 import { HealthAiPage } from './health-ai.page';
 
 function createPage(service: HealthAiService = new HealthAiService()): HealthAiPage {
@@ -10,6 +12,20 @@ function createPage(service: HealthAiService = new HealthAiService()): HealthAiP
       {
         provide: HealthAiService,
         useValue: service
+      },
+      {
+        provide: ImageUploadService,
+        useValue: {}
+      },
+      {
+        provide: HealthAiAnalysisService,
+        useValue: {}
+      },
+      {
+        provide: ChangeDetectorRef,
+        useValue: {
+          markForCheck: () => {}
+        }
       }
     ]
   });

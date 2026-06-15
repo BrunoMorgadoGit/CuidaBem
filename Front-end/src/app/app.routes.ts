@@ -75,6 +75,26 @@ export const privateRoutes: Routes = [
     data: { requiresAuth: true }
   },
   {
+    path: '',
+    canMatch: [authGuard],
+    loadComponent: () => import('./features/tabs/pages/tabs.page').then((m) => m.TabsPage),
+    data: { requiresAuth: true },
+    children: [
+      {
+        path: 'perfil',
+        loadComponent: () => import('./features/profile/pages/profile.page').then((m) => m.ProfilePage)
+      },
+      {
+        path: 'equipe',
+        loadComponent: () => import('./features/care-team/pages/care-team.page').then((m) => m.CareTeamPage)
+      },
+      {
+        path: 'calendario',
+        loadComponent: () => import('./features/calendar/pages/calendar.page').then((m) => m.CalendarPage)
+      }
+    ]
+  },
+  {
     path: 'tabs',
     canMatch: [authGuard],
     loadComponent: () => import('./features/tabs/pages/tabs.page').then((m) => m.TabsPage),
@@ -104,6 +124,10 @@ export const privateRoutes: Routes = [
       {
         path: 'profile',
         loadComponent: () => import('./features/wellness/pages/wellness.page').then((m) => m.WellnessPage)
+      },
+      {
+        path: 'calendario',
+        loadComponent: () => import('./features/calendar/pages/calendar.page').then((m) => m.CalendarPage)
       }
     ]
   }

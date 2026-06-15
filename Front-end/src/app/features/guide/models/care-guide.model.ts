@@ -53,7 +53,7 @@ export interface TutorialVideo {
   description: string;
   externalUrl: string;
   source?: string;
-  relatedGuideSlug: string;
+  relatedGuideSlug?: string;
   relatedExerciseIds?: string[];
 }
 

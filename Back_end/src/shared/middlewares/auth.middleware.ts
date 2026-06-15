@@ -16,7 +16,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as unknown as JwtPayload;
-    req.cuidador = decoded;
+    req.user = decoded;
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-import { MOCK_SCHEDULE, MOCK_TODAY_TASKS } from '../data/care.mock';
+import { MOCK_SCHEDULE } from '../data/care.mock';
 import type { Task, TaskCategory, TaskDraft, TaskPriority, TaskStatus, TaskTemplate } from '../models';
-import { ActivityLogService } from './activity-log.service';
-import { UserService } from './user.service';
 
 const CATEGORY_ICONS: Record<TaskCategory, string> = {
   medication: 'medical-outline',
@@ -41,17 +42,18 @@ export const TASK_TEMPLATES: readonly TaskTemplate[] = [
   providedIn: 'root'
 })
 export class TaskService {
-  private readonly userService = inject(UserService);
-  private readonly activityLog = inject(ActivityLogService);
+  private readonly http = inject(HttpClient);
 
-  private todayTasks: Task[];
-
-  constructor() {
-    this.todayTasks = MOCK_TODAY_TASKS.map((task) => ({ ...task }));
-  }
+  private todayTasks: Task[] = [];
+  private loadedPatientId = '';
 
   getTodayTasks(): Task[] {
     return this.todayTasks;
+  }
+
+  clearLocalState(): void {
+    this.todayTasks = [];
+    this.loadedPatientId = '';
   }
 
   getSchedule(): readonly Task[] {
@@ -62,103 +64,108 @@ export class TaskService {
     return TASK_TEMPLATES;
   }
 
-  addTask(draft: TaskDraft, elderlyId: string): Task {
-    const user = this.userService.getCurrentUser();
-    const task: Task = {
-      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      elderlyId,
+  loadTodayTasks(patientId: string): Observable<Task[]> {
+    this.switchPatient(patientId);
+
+    return this.http.get<any>(`${environment.apiUrl}/tasks?patientId=${patientId}`).pipe(
+      map((res) => {
+        const items = res.data || [];
+        return this.dedupeTasks(items.map((item: any) => this.mapTask(item)));
+      }),
+      tap((mapped) => {
+        this.todayTasks = mapped;
+      })
+    );
+  }
+
+  addTask(draft: TaskDraft, elderlyId: string): Observable<Task> {
+    this.switchPatient(elderlyId);
+
+    const payload = {
+      patientId: elderlyId,
       title: draft.title,
       detail: draft.detail || `Previsto para ${draft.time}`,
       time: draft.time,
       category: draft.category,
       priority: draft.priority,
-      status: 'next',
-      icon: CATEGORY_ICONS[draft.category] || 'checkmark-circle-outline',
-      guideRoute: draft.guideRoute || CATEGORY_ROUTES[draft.category],
-      createdByUserId: user.id,
-      createdAt: new Date().toISOString()
+      guideRoute: draft.guideRoute || CATEGORY_ROUTES[draft.category]
     };
 
-    this.todayTasks.push(task);
-    this.persist();
-
-    this.activityLog.log(
-      elderlyId,
-      'created_task',
-      `${user.name} adicionou a tarefa "${task.title}" para ${draft.time}.`,
-      task.id,
-      { category: task.category, priority: task.priority }
+    return this.http.post<any>(`${environment.apiUrl}/tasks`, payload).pipe(
+      map((res) => this.mapTask(res.data)),
+      tap((task) => {
+        this.todayTasks = this.upsertTask(this.todayTasks, task);
+      })
     );
-
-    return task;
   }
 
-  toggleTaskStatus(taskId: string): TaskStatus | null {
-    const task = this.todayTasks.find((t) => t.id === taskId);
-
-    if (!task) {
-      return null;
-    }
-
-    const user = this.userService.getCurrentUser();
-    const wasDone = task.status === 'done';
-
-    if (wasDone) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const [taskHour, taskMinute] = task.time.split(':').map(Number);
-      
-      const isLate = currentHour > taskHour || (currentHour === taskHour && currentMinute >= taskMinute);
-      
-      task.status = isLate ? 'late' : 'next';
-      task.completedByUserId = undefined;
-      task.completedAt = undefined;
-
-      this.activityLog.log(
-        task.elderlyId,
-        'uncompleted_task',
-        `${user.name} desmarcou a tarefa "${task.title}".`,
-        task.id
-      );
-    } else {
-      task.status = 'done';
-      task.completedByUserId = user.id;
-      task.completedAt = new Date().toISOString();
-
-      this.activityLog.log(
-        task.elderlyId,
-        'completed_task',
-        `${user.name} marcou a tarefa "${task.title}" como concluida.`,
-        task.id
-      );
-    }
-
-    this.persist();
-    return task.status;
-  }
-
-  deleteTask(taskId: string): boolean {
-    const idx = this.todayTasks.findIndex((t) => t.id === taskId);
-
-    if (idx === -1) {
-      return false;
-    }
-
-    const task = this.todayTasks[idx];
-    const user = this.userService.getCurrentUser();
-    this.todayTasks.splice(idx, 1);
-    this.persist();
-
-    this.activityLog.log(
-      task.elderlyId,
-      'deleted_task',
-      `${user.name} removeu a tarefa "${task.title}".`,
-      task.id
+  toggleTaskStatus(taskId: string): Observable<Task> {
+    return this.http.patch<any>(`${environment.apiUrl}/tasks/${taskId}/toggle`, {}).pipe(
+      map((res) => this.mapTask(res.data)),
+      tap((updatedTask) => {
+        this.todayTasks = this.todayTasks.map((task) => task.id === taskId ? updatedTask : task);
+        this.todayTasks = this.dedupeTasks(this.todayTasks);
+      })
     );
-
-    return true;
   }
 
-  private persist(): void {}
+  deleteTask(taskId: string): Observable<boolean> {
+    return this.http.delete<any>(`${environment.apiUrl}/tasks/${taskId}`).pipe(
+      map((res) => {
+        if (!res.data?.deleted) {
+          throw new Error('DELETE_TASK_FAILED');
+        }
+        return true;
+      }),
+      tap((success) => {
+        if (success) {
+          this.todayTasks = this.todayTasks.filter((t) => t.id !== taskId);
+        }
+      })
+    );
+  }
+
+  private mapTask(item: any): Task {
+    return {
+      id: item.id,
+      elderlyId: item.patientId,
+      title: item.title,
+      detail: item.detail,
+      time: item.time,
+      category: item.category as TaskCategory,
+      priority: item.priority as TaskPriority,
+      status: item.status as TaskStatus,
+      icon: item.icon,
+      guideId: item.guideId || undefined,
+      guideRoute: item.guideRoute || undefined,
+      createdByUserId: item.createdByUserId,
+      createdAt: item.createdAt,
+      completedByUserId: item.completedByUserId || undefined,
+      completedAt: item.completedAt || undefined
+    };
+  }
+
+  private switchPatient(patientId: string): void {
+    if (this.loadedPatientId !== patientId) {
+      this.loadedPatientId = patientId;
+      this.todayTasks = [];
+    }
+  }
+
+  private upsertTask(tasks: Task[], nextTask: Task): Task[] {
+    const existingIndex = tasks.findIndex((task) => task.id === nextTask.id);
+    if (existingIndex === -1) {
+      return this.dedupeTasks([...tasks, nextTask]);
+    }
+
+    return this.dedupeTasks(tasks.map((task) => task.id === nextTask.id ? nextTask : task));
+  }
+
+  private dedupeTasks(tasks: Task[]): Task[] {
+    const uniqueTasks = new Map<string, Task>();
+    for (const task of tasks) {
+      uniqueTasks.set(task.id, task);
+    }
+    return Array.from(uniqueTasks.values());
+  }
 }

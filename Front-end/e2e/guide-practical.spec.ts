@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { authenticate } from './auth';
+
 const newGuideCards = [
   ['Higiene Bucal', 'higiene-bucal'],
   ['Prevenção de Assaduras', 'prevencao-assaduras'],
@@ -9,6 +11,10 @@ const newGuideCards = [
 ] as const;
 
 test.describe('Guia Prático', () => {
+  test.beforeEach(async ({ page }) => {
+    await authenticate(page);
+  });
+
   test('shows the new cards without duplicating Troca de Fralda', async ({ page }) => {
     await page.goto('/tabs/agenda');
 
@@ -47,35 +53,22 @@ test.describe('Guia Prático', () => {
     await expect(page.locator('iframe')).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/3YyDC203_qg/);
   });
 
-  test('runs the daily exercise session with complete, undo and reset actions', async ({ page }) => {
-    await page.addInitScript(() => {
-      for (const key of Object.keys(localStorage)) {
-        if (key.startsWith('cuidaBemExercisesProgress_')) {
-          localStorage.removeItem(key);
-        }
-      }
-    });
+  test('opens exercise tutorials as recurring educational content with video', async ({ page }) => {
     await page.goto('/tabs/health');
 
-    await expect(page.getByText('0/10 exercicios')).toBeVisible();
+    await expect(page.getByText('10 tutoriais recorrentes')).toBeVisible();
+    await expect(page.getByText('10 videos disponiveis')).toBeVisible();
     await page.getByRole('button', { name: /Abrir tutorial de Elevar os calcanhares/ }).click();
     const exerciseDialog = page.getByRole('dialog', { name: 'Elevar os calcanhares' });
     await expect(exerciseDialog).toBeVisible();
-    await expect(page.getByText('Este exercicio ainda nao possui video cadastrado.')).toBeVisible();
+    await expect(exerciseDialog.locator('iframe')).toHaveAttribute('src', /youtube\.com\/embed\/lPAnWf3AE4E/);
+    await expect(exerciseDialog.getByText('Realize os exercícios com supervisão')).toBeVisible();
+    await expect(exerciseDialog.getByRole('button', { name: 'Concluir exercicio' })).toHaveCount(0);
+    await expect(exerciseDialog.getByRole('button', { name: 'Desfazer conclusao' })).toHaveCount(0);
 
-    await exerciseDialog.getByRole('button', { name: 'Concluir exercicio' }).click();
-    await expect(page.getByText('1/10 exercicios')).toBeVisible();
-    await expect(exerciseDialog.getByRole('button', { name: 'Desfazer conclusao' })).toBeVisible();
-
-    await exerciseDialog.getByRole('button', { name: 'Desfazer conclusao' }).click();
-    await expect(page.getByText('0/10 exercicios')).toBeVisible();
-
-    await exerciseDialog.getByRole('button', { name: 'Concluir exercicio' }).click();
     await exerciseDialog.getByRole('button', { name: 'Fechar', exact: true }).click();
-    await expect(page.getByText('1/10 exercicios')).toBeVisible();
-
-    await page.getByRole('button', { name: 'Reiniciar sessao de hoje' }).click();
-    await expect(page.getByText('0/10 exercicios')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Abrir tutorial de Elevar os calcanhares/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Reiniciar sessao de hoje' })).toHaveCount(0);
   });
 
   test('shows friendly not found state and keeps deep links after refresh', async ({ page }) => {

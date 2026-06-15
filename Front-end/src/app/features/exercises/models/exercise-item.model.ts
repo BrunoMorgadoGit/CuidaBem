@@ -5,12 +5,14 @@ export interface ExerciseItem {
   title: string;
   category: string;
   icon: string;
-  sets: number;
+  sets: string;
   reps: string;
   description: string;
-  videoUrl: string;
+  youtubeUrl: string;
+  youtubeStartSeconds?: number;
+  videoType: 'youtube';
+  hasVideo: boolean;
   steps: readonly string[];
   precautions: readonly string[];
-  completedToday: boolean;
   tone: ExerciseTone;
 }

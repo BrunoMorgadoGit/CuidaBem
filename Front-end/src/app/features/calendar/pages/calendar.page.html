@@ -1,0 +1,135 @@
+<app-page-shell
+  theme="home"
+  title="Calendário do Cuidado"
+  subtitle="Organize lembretes, consultas e cuidados do idoso"
+  icon="CAL"
+>
+  <section class="calendar-feed">
+    
+    <div class="calendar-hero-card">
+      <div class="hero-content">
+        <span>Hoje</span>
+        <h2>{{ todayLabel }}</h2>
+        <p>{{ pendingRemindersCount$ | async }} lembretes pendentes hoje</p>
+      </div>
+      <button class="btn-new-reminder" (click)="openModal()">+ Novo lembrete</button>
+    </div>
+
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <button (click)="previousMonth()">&lt;</button>
+        <h3>{{ currentMonthLabel }}</h3>
+        <button (click)="nextMonth()">&gt;</button>
+      </div>
+      <div class="calendar-grid">
+        <div class="weekday" *ngFor="let w of weekDays">{{ w }}</div>
+        <div 
+          class="day-cell" 
+          *ngFor="let day of days"
+          [ngClass]="{'not-current': !day.isCurrentMonth, 'is-today': day.isToday, 'is-selected': day.isSelected}"
+          (click)="selectDate(day)">
+          <span class="day-number">{{ day.day }}</span>
+          <div class="day-dots" *ngIf="day.reminders.length > 0">
+            <span *ngFor="let r of day.reminders | slice:0:3" class="dot" [ngClass]="getDotClass(r.category)"></span>
+            <span *ngIf="day.reminders.length > 3" class="dot-more">+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reminders-section">
+      <h3>Lembretes de {{ selectedDateLabel }}</h3>
+      
+      <div class="reminders-list" *ngIf="(selectedDateReminders$ | async) as reminders">
+        <div class="empty-state" *ngIf="reminders.length === 0">
+          Nenhum lembrete para esta data.
+        </div>
+        
+        <div class="reminder-card" *ngFor="let r of reminders" [ngClass]="r.status">
+          <div class="reminder-time">{{ r.time }}</div>
+          <div class="reminder-content">
+            <div class="reminder-header">
+              <span class="category-badge" [ngClass]="getDotClass(r.category)">{{ getCategoryLabel(r.category) }}</span>
+              <span class="status-badge" [ngClass]="r.status">{{ r.status | uppercase }}</span>
+            </div>
+            <h4>{{ r.title }}</h4>
+            <p *ngIf="r.notes">{{ r.notes }}</p>
+            <small *ngIf="r.status === 'completed'">Concluído por {{ r.completedBy }} às {{ r.completedAt | date:'HH:mm' }}</small>
+          </div>
+          <div class="reminder-actions">
+            <button class="btn-icon check" *ngIf="r.status !== 'completed'" (click)="completeReminder(r.id)">✓</button>
+            <button class="btn-icon edit" (click)="openModal(r)">✎</button>
+            <button class="btn-icon delete" (click)="deleteReminder(r.id)">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingReminderId ? 'Editar Lembrete' : 'Novo Lembrete' }}</h2>
+        <button class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <label>
+          Título
+          <input type="text" [(ngModel)]="modalTitle" placeholder="Ex: Dar remédio da pressão">
+        </label>
+        
+        <div class="form-row">
+          <label>
+            Categoria
+            <select [(ngModel)]="modalCategory">
+              <option value="appointment">Consulta</option>
+              <option value="shopping">Compras do dia</option>
+              <option value="outing">Passeio</option>
+              <option value="other">Outros / Diversos</option>
+            </select>
+          </label>
+          <label>
+            Prioridade
+            <select [(ngModel)]="modalPriority">
+              <option value="normal">Normal</option>
+              <option value="important">Importante</option>
+              <option value="urgent">Urgente</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            Data
+            <input type="date" [(ngModel)]="modalDate">
+          </label>
+          <label>
+            Horário
+            <input type="time" [(ngModel)]="modalTime">
+          </label>
+        </div>
+
+        <label>
+          Repetição
+          <select [(ngModel)]="modalRepeat">
+            <option value="none">Não repetir</option>
+            <option value="daily">Diário</option>
+            <option value="weekly">Semanal</option>
+            <option value="monthly">Mensal</option>
+          </select>
+        </label>
+
+        <label>
+          Observações
+          <textarea [(ngModel)]="modalNotes" rows="3" placeholder="Informações adicionais"></textarea>
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+        <button class="btn-save" (click)="saveReminder()" [disabled]="!modalTitle || !modalDate || !modalTime">Salvar</button>
+      </div>
+    </div>
+  </div>
+</app-page-shell>

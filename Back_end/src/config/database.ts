@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { env } from './env.config';
 
 export const prisma = new PrismaClient({
@@ -8,7 +8,7 @@ export const prisma = new PrismaClient({
 
 export async function connectDatabase(): Promise<void> {
   await prisma.$connect();
-  console.log('[Prisma] Conexão com SQLite estabelecida.');
+  console.log('[Prisma] Conexão com MySQL estabelecida.');
 }
 
 export async function disconnectDatabase(): Promise<void> {

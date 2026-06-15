@@ -1,150 +1,341 @@
 import bcrypt from 'bcrypt';
+import { createHash, randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../config/database';
 import { env } from '../../config/env.config';
-import { registrarLogInfo, registrarLogAviso } from '../../shared/utils/logger';
+import { registrarLogAviso, registrarLogInfo } from '../../shared/utils/logger';
 import type { JwtPayload } from '../../shared/types/jwt.types';
-import type { LoginDto, RegisterDto, UpdateProfileDto, RefreshDto } from './auth.schema';
+import type { LoginDto, LogoutDto, RefreshDto, RegisterDto } from './auth.schema';
 
-const CUIDADOR_PUBLIC_FIELDS = {
-  id: true,
-  nome: true,
-  email: true,
-  cpf: true,
-  sexo: true,
-  telefone: true,
-  turno: true,
-  criado_em: true,
-  atualizado_em: true,
-} as const;
+type RequestMeta = {
+  userAgent?: string;
+  ipAddress?: string;
+};
+
+function normalizeUserName(dto: RegisterDto): string {
+  return dto.name ?? dto.nome ?? '';
+}
+
+function normalizePassword(dto: RegisterDto | LoginDto): string {
+  return dto.password ?? dto.senha ?? '';
+}
+
+function normalizePhone(dto: RegisterDto): string | null {
+  return dto.phone ?? dto.telefone ?? null;
+}
+
+function normalizePatient(dto: RegisterDto) {
+  const patient = dto.patient ?? dto.paciente;
+  const name = patient?.name ?? patient?.nome ?? dto.patientName ?? dto.nomePaciente ?? `Idoso de ${normalizeUserName(dto)}`;
+  const birthDate = patient?.birthDate ?? patient?.dataNascimento ?? null;
+  const sex = patient?.sex ?? patient?.sexo ?? null;
+  const weight = patient?.weight ?? patient?.peso ?? null;
+  const healthConditions = patient?.healthConditions ?? patient?.condicoesMedicinais ?? [];
+
+  return {
+    name,
+    birthDate,
+    cpf: patient?.cpf ?? null,
+    sex,
+    weight,
+    healthConditions: Array.isArray(healthConditions)
+      ? healthConditions
+      : healthConditions
+        ? healthConditions.split(',').map((item) => item.trim()).filter(Boolean)
+        : [],
+    photoUrl: patient?.photoUrl ?? null,
+  };
+}
+
+function mapUser(user: any) {
+  return {
+    id: user.id,
+    accountId: user.accountId,
+    name: user.name,
+    email: user.email,
+    cpf: user.cpf ?? undefined,
+    phone: user.phone ?? undefined,
+    role: String(user.role).toLowerCase(),
+    avatarUrl: user.avatarUrl ?? undefined,
+    active: user.active,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
+
+function mapPatient(patient: any | null) {
+  if (!patient) return null;
+
+  return {
+    id: patient.id,
+    accountId: patient.accountId,
+    name: patient.name,
+    birthDate: patient.birthDate ?? undefined,
+    cpf: patient.cpf ?? undefined,
+    sex: patient.sex ?? undefined,
+    weight: patient.weight ?? undefined,
+    healthConditions: Array.isArray(patient.healthConditions) ? patient.healthConditions : [],
+    notes: patient.notes ?? undefined,
+    photoUrl: patient.photoUrl ?? undefined,
+    status: String(patient.status).toLowerCase(),
+    createdAt: patient.createdAt,
+    updatedAt: patient.updatedAt,
+  };
+}
 
 export class AuthService {
-  gerarRefreshToken(cuidadorId: number): string {
-    return jwt.sign({ sub: cuidadorId }, env.JWT_SECRET, { expiresIn: '7d' });
+  private hashRefreshToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 
-  validarRefreshToken(token: string): JwtPayload | null {
-    try {
-      const payload = jwt.verify(token, env.JWT_SECRET);
-      if (typeof payload === 'string') return null;
-      return payload as JwtPayload;
-    } catch {
-      return null;
-    }
-  }
-
-  async login(dto: LoginDto): Promise<{ token: string; refreshToken: string; cuidador: object; expiresIn: string }> {
-    const cuidador = await prisma.cuidador.findUnique({
-      where: { email: dto.email },
-      select: { ...CUIDADOR_PUBLIC_FIELDS, senha_hash: true },
-    });
-
-    const senhaValida = cuidador
-      ? await bcrypt.compare(dto.senha, cuidador.senha_hash)
-      : await bcrypt.compare(dto.senha, '$2b$12$invalidhashfortimingprotection00000000000');
-
-    if (!cuidador || !senhaValida) {
-      registrarLogAviso(`Tentativa de login falha para o email: ${dto.email}`);
-      throw new Error('INVALID_CREDENTIALS');
-    }
-
+  private createAccessToken(user: any): string {
     const payload: Omit<JwtPayload, 'iat' | 'exp'> = {
-      sub: cuidador.id,
-      email: cuidador.email,
-      nome: cuidador.nome,
+      sub: user.id,
+      accountId: user.accountId,
+      email: user.email,
+      name: user.name,
+      role: String(user.role).toLowerCase(),
     };
 
-    const token = jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: '2h',
+    return jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN as any });
+  }
+
+  private async createRefreshToken(userId: string, meta: RequestMeta = {}): Promise<string> {
+    const token = randomBytes(64).toString('hex');
+    const tokenHash = this.hashRefreshToken(token);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await prisma.refreshToken.create({
+      data: {
+        userId,
+        tokenHash,
+        expiresAt,
+        userAgent: meta.userAgent ?? null,
+        ipAddress: meta.ipAddress ?? null,
+      },
     });
 
-    const refreshToken = this.gerarRefreshToken(cuidador.id);
+    return token;
+  }
 
-    const { senha_hash: _removed, ...cuidadorPublico } = cuidador;
-    void _removed;
+  private async findCurrentPatient(userId: string) {
+    const preference = await prisma.userPreference.findUnique({
+      where: { userId },
+      include: { currentPatient: true },
+    });
 
-    registrarLogInfo(`Login efetuado com sucesso: ${cuidador.email}`);
+    if (preference?.currentPatient) {
+      const member = await prisma.patientMember.findUnique({
+        where: {
+          patientId_userId: {
+            patientId: preference.currentPatient.id,
+            userId,
+          },
+        },
+      });
+
+      if (member?.active && preference.currentPatient.status === 'ACTIVE') {
+        return preference.currentPatient;
+      }
+    }
+
+    const firstMember = await prisma.patientMember.findFirst({
+      where: {
+        userId,
+        active: true,
+        patient: { status: 'ACTIVE' },
+      },
+      include: { patient: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (firstMember) {
+      await prisma.userPreference.upsert({
+        where: { userId },
+        update: { currentPatientId: firstMember.patientId },
+        create: { userId, currentPatientId: firstMember.patientId },
+      });
+    }
+
+    return firstMember?.patient ?? null;
+  }
+
+  async register(dto: RegisterDto, meta: RequestMeta = {}) {
+    const name = normalizeUserName(dto);
+    const password = normalizePassword(dto);
+    const patientInput = normalizePatient(dto);
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: dto.email },
+          ...(dto.cpf ? [{ cpf: dto.cpf }] : []),
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (existingUser) throw new Error('USER_ALREADY_EXISTS');
+
+    if (patientInput.cpf) {
+      const existingPatient = await prisma.patient.findUnique({
+        where: { cpf: patientInput.cpf },
+        select: { id: true },
+      });
+      if (existingPatient) throw new Error('PATIENT_ALREADY_EXISTS');
+    }
+
+    const passwordHash = await bcrypt.hash(password, env.BCRYPT_SALT_ROUNDS);
+
+    const result = await prisma.$transaction(async (tx: any) => {
+      const account = await tx.account.create({
+        data: { name: dto.accountName ?? `Grupo de ${name}` },
+      });
+
+      const user = await tx.user.create({
+        data: {
+          accountId: account.id,
+          name,
+          email: dto.email,
+          passwordHash,
+          cpf: dto.cpf ?? null,
+          phone: normalizePhone(dto),
+          role: 'RESPONSIBLE',
+        },
+      });
+
+      const patient = await tx.patient.create({
+        data: {
+          accountId: account.id,
+          name: patientInput.name,
+          birthDate: patientInput.birthDate,
+          cpf: patientInput.cpf,
+          sex: patientInput.sex,
+          weight: patientInput.weight,
+          healthConditions: patientInput.healthConditions,
+          photoUrl: patientInput.photoUrl,
+        },
+      });
+
+      await tx.patientMember.create({
+        data: {
+          accountId: account.id,
+          patientId: patient.id,
+          userId: user.id,
+          role: 'RESPONSIBLE',
+        },
+      });
+
+      await tx.userPreference.create({
+        data: {
+          userId: user.id,
+          currentPatientId: patient.id,
+        },
+      });
+
+      return { user, patient };
+    });
+
+    const token = this.createAccessToken(result.user);
+    const refreshToken = await this.createRefreshToken(result.user.id, meta);
+
+    registrarLogInfo(`Usuário registrado com sucesso: ${result.user.email}`);
 
     return {
       token,
       refreshToken,
-      cuidador: cuidadorPublico,
       expiresIn: env.JWT_EXPIRES_IN,
+      user: mapUser(result.user),
+      currentPatient: mapPatient(result.patient),
     };
   }
 
-  async refresh(dto: RefreshDto): Promise<{ token: string; refreshToken: string }> {
-    const payload = this.validarRefreshToken(dto.refreshToken);
-    if (!payload) throw new Error('INVALID_CREDENTIALS');
+  async login(dto: LoginDto, meta: RequestMeta = {}) {
+    const user = await prisma.user.findUnique({ where: { email: dto.email } });
+    const password = normalizePassword(dto);
 
-    const cuidador = await prisma.cuidador.findUnique({ where: { id: payload.sub } });
-    if (!cuidador) throw new Error('RESOURCE_NOT_FOUND');
+    const validPassword = user
+      ? await bcrypt.compare(password, user.passwordHash)
+      : await bcrypt.compare(password, '$2b$12$invalidhashfortimingprotection00000000000');
 
-    const novoToken = jwt.sign(
-      { sub: cuidador.id, email: cuidador.email, nome: cuidador.nome },
-      env.JWT_SECRET,
-      { expiresIn: '2h' }
-    );
-
-    const novoRefreshToken = this.gerarRefreshToken(cuidador.id);
-
-    return { token: novoToken, refreshToken: novoRefreshToken };
-  }
-
-  async register(dto: RegisterDto): Promise<object> {
-    const existente = await prisma.cuidador.findFirst({
-      where: { OR: [{ email: dto.email }, { cpf: dto.cpf }] },
-      select: { id: true },
-    });
-
-    if (existente) {
-      throw new Error('CUIDADOR_ALREADY_EXISTS');
+    if (!user || !user.active || !validPassword) {
+      registrarLogAviso(`Tentativa de login falha para o email: ${dto.email}`);
+      throw new Error('INVALID_CREDENTIALS');
     }
 
-    const senha_hash = await bcrypt.hash(dto.senha, env.BCRYPT_SALT_ROUNDS);
+    const token = this.createAccessToken(user);
+    const refreshToken = await this.createRefreshToken(user.id, meta);
+    const currentPatient = await this.findCurrentPatient(user.id);
 
-    const novoCuidador = await prisma.cuidador.create({
-      data: {
-        nome: dto.nome,
-        email: dto.email,
-        senha_hash,
-        cpf: dto.cpf,
-        sexo: dto.sexo ?? null,
-        telefone: dto.telefone ?? null,
-        turno: dto.turno ?? null,
-      },
-      select: CUIDADOR_PUBLIC_FIELDS,
-    });
+    registrarLogInfo(`Login efetuado com sucesso: ${user.email}`);
 
-    return novoCuidador;
+    return {
+      token,
+      refreshToken,
+      expiresIn: env.JWT_EXPIRES_IN,
+      user: mapUser(user),
+      currentPatient: mapPatient(currentPatient),
+    };
   }
 
-  async getMe(cuidadorId: number): Promise<object> {
-    const cuidador = await prisma.cuidador.findUnique({
-      where: { id: cuidadorId },
-      select: CUIDADOR_PUBLIC_FIELDS,
+  async refresh(dto: RefreshDto, meta: RequestMeta = {}) {
+    const tokenHash = this.hashRefreshToken(dto.refreshToken);
+    const stored = await prisma.refreshToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
     });
 
-    if (!cuidador) {
-      throw new Error('RESOURCE_NOT_FOUND');
+    if (!stored || stored.revokedAt || stored.expiresAt <= new Date() || !stored.user.active) {
+      throw new Error('INVALID_REFRESH_TOKEN');
     }
 
-    return cuidador;
-  }
-
-  async updateProfile(cuidadorId: number, dto: UpdateProfileDto): Promise<object> {
-    const atualizado = await prisma.cuidador.update({
-      where: { id: cuidadorId },
-      data: {
-        ...(dto.nome !== undefined && { nome: dto.nome }),
-        ...(dto.telefone !== undefined && { telefone: dto.telefone }),
-        ...(dto.turno !== undefined && { turno: dto.turno }),
-        ...(dto.sexo !== undefined && { sexo: dto.sexo }),
-      },
-      select: CUIDADOR_PUBLIC_FIELDS,
+    await prisma.refreshToken.update({
+      where: { id: stored.id },
+      data: { revokedAt: new Date() },
     });
 
-    return atualizado;
+    const token = this.createAccessToken(stored.user);
+    const refreshToken = await this.createRefreshToken(stored.userId, meta);
+    const currentPatient = await this.findCurrentPatient(stored.userId);
+
+    return {
+      token,
+      refreshToken,
+      expiresIn: env.JWT_EXPIRES_IN,
+      user: mapUser(stored.user),
+      currentPatient: mapPatient(currentPatient),
+    };
+  }
+
+  async logout(userId: string, dto: LogoutDto): Promise<{ loggedOut: true }> {
+    if (dto.refreshToken) {
+      await prisma.refreshToken.updateMany({
+        where: {
+          userId,
+          tokenHash: this.hashRefreshToken(dto.refreshToken),
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      });
+    } else {
+      await prisma.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
+
+    return { loggedOut: true };
+  }
+
+  async getMe(userId: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.active) throw new Error('USER_NOT_FOUND');
+
+    const currentPatient = await this.findCurrentPatient(userId);
+    return {
+      user: mapUser(user),
+      currentPatient: mapPatient(currentPatient),
+    };
   }
 }
 

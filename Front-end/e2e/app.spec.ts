@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { authenticate, TEST_USER } from './auth';
+
 test.describe('CuidaBem app', () => {
   test('opens onboarding and reaches the home tab through login', async ({ page }) => {
     await page.goto('/');
@@ -11,15 +13,16 @@ test.describe('CuidaBem app', () => {
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
 
-    await page.getByPlaceholder('seu@email.com').fill('cuidador@cuidabem.test');
-    await page.getByPlaceholder('Sua senha').fill('SenhaTeste#2026');
+    await page.getByPlaceholder('seu@email.com').fill(TEST_USER.email);
+    await page.getByPlaceholder('Sua senha').fill(TEST_USER.password);
     await page.getByRole('button', { name: 'Entrar no sistema' }).click();
     await expect(page).toHaveURL(/\/tabs\/home$/);
-    await expect(page.getByRole('heading', { name: 'Paciente Exemplo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Maria Aparecida Santos' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Tarefas de Hoje' })).toBeVisible();
   });
 
   test('navigates across the main bottom tabs', async ({ page }) => {
+    await authenticate(page);
     await page.goto('/tabs/home');
 
     const nav = page.locator('nav.bottom-nav');
@@ -58,6 +61,7 @@ test.describe('CuidaBem app', () => {
   });
 
   test('opens emergency information from the floating SOS link', async ({ page }) => {
+    await authenticate(page);
     await page.goto('/tabs/home');
 
     await page.getByRole('link', { name: 'Abrir emergencia' }).click();
@@ -69,6 +73,7 @@ test.describe('CuidaBem app', () => {
   });
 
   test('shows a friendly 404 page for unknown routes', async ({ page }) => {
+    await authenticate(page);
     await page.goto('/rota-inexistente');
 
     await expect(page.getByRole('heading', { name: 'Pagina nao encontrada' })).toBeVisible();

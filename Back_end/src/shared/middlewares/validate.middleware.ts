@@ -4,6 +4,16 @@ import { sendError } from '../utils/response.helper';
 
 type ValidateTarget = 'body' | 'params' | 'query';
 
+declare global {
+  namespace Express {
+    interface Request {
+      validatedBody?: unknown;
+      validatedParams?: unknown;
+      validatedQuery?: unknown;
+    }
+  }
+}
+
 export function validate(schema: ZodSchema, target: ValidateTarget = 'body') {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req[target]);
@@ -18,7 +28,17 @@ export function validate(schema: ZodSchema, target: ValidateTarget = 'body') {
       return;
     }
 
-    req[target] = result.data as typeof req[typeof target];
+    if (target === 'body') {
+      req.validatedBody = result.data;
+      req.body = result.data;
+    } else if (target === 'params') {
+      req.validatedParams = result.data;
+      Object.keys(req.params).forEach((key) => delete req.params[key]);
+      Object.assign(req.params, result.data);
+    } else {
+      req.validatedQuery = result.data;
+    }
+
     next();
   };
 }

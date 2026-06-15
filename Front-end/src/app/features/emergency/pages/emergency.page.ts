@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { SupportContact } from '../../../core/models';
@@ -13,13 +13,25 @@ import { trackById } from '../../../shared/utils';
   imports: [BottomNavigationComponent, CommonModule, RouterLink],
   templateUrl: './emergency.page.html',
   styleUrls: ['./emergency.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EmergencyPage {
+export class EmergencyPage implements OnInit {
   private readonly patientService = inject(PatientService);
   private readonly emergencyService = inject(EmergencyService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly patient = this.patientService.getCurrentPatient();
-  readonly contacts = this.emergencyService.getSupportContacts();
+  contacts: SupportContact[] = [];
   readonly trackByContactId = trackById<SupportContact>;
+
+  ngOnInit(): void {
+    const patientId = this.patient.id;
+    this.emergencyService.loadSupportContacts(patientId).subscribe({
+      next: (contacts) => {
+        this.contacts = contacts;
+      },
+      error: (err) => {
+        console.error('Error loading support contacts:', err);
+      }
+    });
+  }
 }

@@ -11,7 +11,6 @@ import { trackById } from '../../utils';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './bottom-navigation.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BottomNavigationComponent {
   readonly items = BOTTOM_NAV_ITEMS;

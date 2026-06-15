@@ -440,3 +440,280 @@
 .camera-actions .btn {
   flex: 1;
 }
+
+/* Visual refresh: AI Health */
+.ai-risk-note {
+  justify-self: start;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.ai-risk-note span {
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.ai-observation-grid,
+.app-page-shell .ai-observation-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ai-observation-grid button,
+.app-page-shell .ai-observation-grid button {
+  min-height: 136px;
+  border: 1px solid rgba(226, 232, 240, 0.94);
+  border-radius: 20px;
+  background: #FFFFFF;
+  padding: 16px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.ai-observation-grid button:hover {
+  border-color: rgba(52, 72, 217, 0.26);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(52, 72, 217, 0.10);
+}
+
+.ai-observation-grid button.selected,
+.ai-observation-grid button.active,
+.app-page-shell .ai-observation-grid button.selected,
+.app-page-shell .ai-observation-grid button.active {
+  border-color: rgba(52, 72, 217, 0.44);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(52, 72, 217, 0.12), transparent 38%),
+    #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(52, 72, 217, 0.10), 0 16px 36px rgba(52, 72, 217, 0.12);
+}
+
+.ai-observation-grid button > span {
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  font-size: 11px;
+}
+
+.ai-observation-grid strong {
+  font-size: 15px;
+}
+
+.ai-observation-grid small {
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.ai-capture-panel,
+.ai-behavior-panel,
+.ai-vitals-panel {
+  gap: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.94);
+  border-radius: 22px;
+  background: #FFFFFF;
+  padding: 18px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.ai-panel-header > span {
+  width: 48px;
+  height: 48px;
+  border-radius: 17px;
+  background: #EEF1FF;
+  color: var(--primary);
+}
+
+.ai-panel-header h3 {
+  font-size: 18px;
+}
+
+.ai-tool-instructions {
+  border-color: rgba(226, 232, 240, 0.94);
+  border-radius: 18px;
+  background: #F8FAFC;
+}
+
+.ai-capture-frame {
+  min-height: 210px;
+  border: 1.5px dashed rgba(52, 72, 217, 0.34);
+  border-radius: 22px;
+  background:
+    linear-gradient(rgba(52, 72, 217, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52, 72, 217, 0.07) 1px, transparent 1px),
+    #F8FAFC;
+  background-size: 30px 30px;
+}
+
+.ai-capture-frame span {
+  border: 0;
+  animation: none;
+}
+
+.ai-capture-frame strong {
+  color: var(--text-primary);
+}
+
+.ai-tool-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ai-tool-panel .btn {
+  min-height: 50px;
+  border-radius: 16px;
+}
+
+.ai-tool-panel .btn-outline {
+  border: 1px solid rgba(52, 72, 217, 0.18);
+  background: #F8FAFC;
+  color: var(--primary);
+}
+
+.ai-tool-submit {
+  background: linear-gradient(135deg, var(--primary), #5B35D9);
+  box-shadow: 0 14px 30px rgba(52, 72, 217, 0.18);
+}
+
+.ai-behavior-panel textarea,
+.ai-vitals-panel input {
+  border-color: rgba(226, 232, 240, 0.96);
+  border-radius: 16px;
+  background: #F8FAFC;
+}
+
+.ai-vitals-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.camera-preview,
+.camera-captured {
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.94);
+  border-radius: 22px;
+  background: #F8FAFC;
+  margin-bottom: 0;
+  padding: 12px;
+}
+
+.camera-preview video,
+.camera-captured img {
+  border-radius: 18px;
+}
+
+.camera-actions {
+  gap: 10px;
+}
+
+@media (min-width: 760px) {
+  .ai-observation-grid,
+  .app-page-shell .ai-observation-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ai-vitals-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ai-risk-note {
+    border-radius: 18px;
+  }
+
+  .ai-tool-actions,
+  .camera-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-capture-panel,
+  .ai-behavior-panel,
+  .ai-vitals-panel {
+    border-radius: 20px;
+    padding: 16px;
+  }
+}
+
+/* Responsive web layout: AI Health */
+@media (min-width: 1024px) {
+  .ai-risk-note {
+    justify-self: end;
+    max-width: 460px;
+  }
+
+  .ai-observation-grid,
+  .app-page-shell .ai-observation-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 16px;
+  }
+
+  .ai-observation-grid button,
+  .app-page-shell .ai-observation-grid button {
+    min-height: 150px;
+  }
+
+  .ai-tool-panel {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-capture-panel,
+  .ai-behavior-panel,
+  .ai-vitals-panel {
+    padding: 22px;
+  }
+
+  .ai-capture-frame {
+    min-height: 280px;
+  }
+
+  .ai-tool-actions {
+    grid-template-columns: repeat(2, minmax(180px, 240px));
+    justify-content: start;
+  }
+
+  .ai-tool-submit {
+    width: min(100%, 360px) !important;
+    justify-self: start;
+  }
+
+  .ai-vitals-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ai-observation-grid,
+  .app-page-shell .ai-observation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .ai-capture-frame {
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 767px) {
+  .ai-observation-grid,
+  .app-page-shell .ai-observation-grid,
+  .ai-tool-actions,
+  .ai-vitals-grid,
+  .camera-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ai-capture-frame {
+    min-height: 210px;
+  }
+
+  .ai-tool-submit {
+    width: 100% !important;
+  }
+}

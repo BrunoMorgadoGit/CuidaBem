@@ -1,8 +1,9 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { ChangeDetectorRef, Injector, runInInjectionContext } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { describe, expect, it } from 'vitest';
 
 import { AuthPage } from './auth.page';
+import { UserService, PatientService, AuthSessionService } from '../../../core/services';
 
 const routeWithMode = (mode?: string): ActivatedRoute => ({
   snapshot: {
@@ -21,6 +22,24 @@ function createPage(mode?: string): AuthPage {
         provide: Router,
         useValue: {
           navigateByUrl: () => Promise.resolve(true)
+        }
+      },
+      {
+        provide: UserService,
+        useValue: {}
+      },
+      {
+        provide: PatientService,
+        useValue: {}
+      },
+      {
+        provide: AuthSessionService,
+        useValue: {}
+      },
+      {
+        provide: ChangeDetectorRef,
+        useValue: {
+          markForCheck: () => {}
         }
       }
     ]
@@ -48,6 +67,7 @@ describe('AuthPage', () => {
     const page = createPage('register');
 
     page.authForm.controls.name.setValue('Cuidador Exemplo');
+    page.authForm.controls.elderlyName.setValue('Idoso Exemplo');
     page.authForm.controls.email.setValue('cuidador@cuidabem.test');
     page.authForm.controls.password.setValue('123456');
     page.continue();

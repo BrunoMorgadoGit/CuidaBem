@@ -1,9 +1,24 @@
 import { Router } from 'express';
-import { getDashboard, toggleTaskStatus } from './patient.controller';
+import { authenticate } from '../../shared/middlewares/auth.middleware';
+import { validate } from '../../shared/middlewares/validate.middleware';
+import {
+  createPatient,
+  deletePatient,
+  getCurrentPatient,
+  getPatient,
+  listPatients,
+  updatePatient,
+} from './patient.controller';
+import { CreatePatientSchema, PatientIdParamSchema, UpdatePatientSchema } from './patient.schema';
 
 const patientRouter = Router();
 
-patientRouter.get('/:id/dashboard', getDashboard);
-patientRouter.post('/:id/tasks/:taskId/toggle', toggleTaskStatus);
+patientRouter.use(authenticate);
+patientRouter.get('/current', getCurrentPatient);
+patientRouter.get('/', listPatients);
+patientRouter.get('/:id', validate(PatientIdParamSchema, 'params'), getPatient);
+patientRouter.post('/', validate(CreatePatientSchema), createPatient);
+patientRouter.patch('/:id', validate(PatientIdParamSchema, 'params'), validate(UpdatePatientSchema), updatePatient);
+patientRouter.delete('/:id', validate(PatientIdParamSchema, 'params'), deletePatient);
 
 export { patientRouter };

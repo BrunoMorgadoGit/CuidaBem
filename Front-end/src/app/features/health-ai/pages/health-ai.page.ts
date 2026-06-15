@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AppStateComponent, PageShellComponent } from '../../../shared/components';
@@ -21,7 +21,6 @@ interface FeedbackState {
   imports: [AppStateComponent, CommonModule, PageShellComponent, ReactiveFormsModule],
   templateUrl: './health-ai.page.html',
   styleUrls: ['./health-ai.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HealthAiPage implements OnDestroy {
   @ViewChild('videoElement') videoElement?: ElementRef<HTMLVideoElement>;
@@ -30,9 +29,11 @@ export class HealthAiPage implements OnDestroy {
   cameraStream: MediaStream | null = null;
   capturedImage: string | null = null;
   showCamera = false;
+  isLoading = false;
   private readonly healthAiService = inject(HealthAiService);
   private readonly imageUploadService = inject(ImageUploadService);
   private readonly healthAiAnalysisService = inject(HealthAiAnalysisService);
+  private readonly cdr = inject(ChangeDetectorRef);
   selectedIdosoId?: number;
   autoSaveEnabled = false;
 
@@ -143,7 +144,7 @@ export class HealthAiPage implements OnDestroy {
     const video = this.videoElement.nativeElement;
     const canvas = this.canvasElement.nativeElement;
     const context = canvas.getContext('2d');
-    
+
     if (context && video.videoWidth > 0 && video.videoHeight > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -209,54 +210,82 @@ export class HealthAiPage implements OnDestroy {
         message: 'Capture ou selecione uma imagem antes de analisar.'
       };
       return;
-    }
+    }
+
+    this.isLoading = true;
     this.feedback = {
       type: 'success',
       title: 'Processando...',
       message: 'Comprimindo imagem (1/3)...'
     };
 
-    try {
-      this.feedback.message = 'Enviando imagem (2/3)...';
+    try {
+      this.feedback = {
+        type: 'success',
+        title: 'Processando...',
+        message: 'Enviando imagem (2/3)...'
+      };
+
       const uploadResponse = await this.imageUploadService.uploadImage(
         this.capturedImage,
         this.selectedIdosoId
-      );
-      this.feedback.message = 'Analisando com IA (3/3)...';
+      );
+
+      this.feedback = {
+        type: 'success',
+        title: 'Processando...',
+        message: 'Analisando com IA (3/3)...'
+      };
+
       const category = this.selectedTool === 'skin' ? 'pele' : 'excreção';
-      
+
       const analysisResponse = await this.healthAiAnalysisService.analyzeImage({
         imageUrl: uploadResponse.caminho,
         category,
         notes: '',
         idosoId: this.selectedIdosoId
-      });
-      const riskEmoji: Record<string, string> = {
-        low: '✅',
-        medium: '⚠️',
-        high: '🔴',
-        critical: '🚨'
+      });
+      const riskLevelMap: Record<string, 'success' | 'error'> = {
+        baixo: 'success',
+        moderado: 'success',
+        alto: 'error'
       };
 
+      const riskEmojiMap: Record<string, string> = {
+        baixo: '✅',
+        moderado: '⚠️',
+        alto: '🔴'
+      };
+
+      const formattedMessage = `${analysisResponse.summary}\n\n` +
+        `Observações:\n` +
+        analysisResponse.observations.map(o => `• ${o}`).join('\n') + `\n\n` +
+        `Recomendações:\n` +
+        analysisResponse.recommendations.map(r => `• ${r}`).join('\n') + `\n\n` +
+        `${analysisResponse.warning}`;
+
       this.feedback = {
-        type: analysisResponse.diagnosis.requiresImmediateAttention ? 'error' : 'success',
-        title: `${riskEmoji[analysisResponse.diagnosis.riskLevel] || '✅'} ${analysisResponse.diagnosis.riskLevel.toUpperCase()}`,
-        message: analysisResponse.diagnosis.findings.join('\n\n')
-      };
+        type: riskLevelMap[analysisResponse.riskLevel] || 'success',
+        title: `${riskEmojiMap[analysisResponse.riskLevel] || '✅'} ${analysisResponse.title}`,
+        message: formattedMessage
+      };
       if (this.autoSaveEnabled) {
         await this.saveAnalysis(analysisResponse);
       }
 
     } catch (error: any) {
+      console.error('Erro na análise:', error);
       this.feedback = {
         type: 'error',
         title: 'Erro na análise',
         message: error.message || 'Não foi possível analisar a imagem. Tente novamente.'
       };
+    } finally {
+      this.isLoading = false;
     }
   }
 
-  private async saveAnalysis(response: AnalysisResponse): Promise<void> {
+  private async saveAnalysis(response: AnalysisResponse): Promise<void> {
   }
 
   sendBehaviorVideo(): void {
@@ -280,9 +309,14 @@ export class HealthAiPage implements OnDestroy {
       return;
     }
 
+    this.healthAiService.saveObservationDraft({
+      observationTypeId: 'observation-behavior',
+      note: this.behaviorForm.controls.note.value
+    });
+
     this.feedback = {
       type: 'success',
-      title: 'Analisando comportamento...',
+      title: 'Comportamento registrado',
       message: 'A IA está analisando os dados. Aguarde um instante.'
     };
 
@@ -334,7 +368,7 @@ export class HealthAiPage implements OnDestroy {
 
     this.feedback = {
       type: 'success',
-      title: 'Analisando sinais vitais...',
+      title: 'Sinais vitais preparados',
       message: 'A IA está analisando os dados. Aguarde um instante.'
     };
 
@@ -350,7 +384,7 @@ export class HealthAiPage implements OnDestroy {
 
       const response = await this.healthAiService.analyzeObservation('vital', inputData);
       const findings = response.data?.analysisResult?.diagnosticFindings?.join(' ');
-      
+
       this.feedback = {
         type: 'success',
         title: 'Sinais Vitais Analisados',

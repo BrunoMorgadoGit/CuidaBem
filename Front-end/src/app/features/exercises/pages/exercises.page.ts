@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
-import { environment } from '../../../../environments/environment';
-import { BrowserStorageService } from '../../../core/services';
 import { PageShellComponent } from '../../../shared/components/page-shell/page-shell.component';
 import { trackById } from '../../../shared/utils';
 import type { ExerciseItem } from '../models';
@@ -15,35 +13,38 @@ import { ExercisesService } from '../services/exercises.service';
   imports: [CommonModule, PageShellComponent],
   templateUrl: './exercises.page.html',
   styleUrls: ['./exercises.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExercisesPage {
+export class ExercisesPage implements OnInit {
   private readonly exercisesService = inject(ExercisesService);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly storage = inject(BrowserStorageService);
-  readonly progressStorageKey = `cuidaBemExercisesProgress_${this.getTodayDateKey()}`;
 
   readonly trackByExerciseId = trackById<ExerciseItem>;
 
-  exercises = this.exercisesService
-    .getExercises()
-    .map((exercise) => ({ ...exercise, completedToday: this.getSavedCompletedIds().has(exercise.id) }));
+  exercises: ExerciseItem[] = [];
   activeExercise: ExerciseItem | null = null;
+
+  constructor() {
+    try {
+      this.exercises = [...(this.exercisesService.getExercises() || [])];
+    } catch {
+      this.exercises = [];
+    }
+  }
+
+  ngOnInit(): void {
+    this.exercisesService.getExercisesApi().subscribe({
+      next: (res) => {
+        this.exercises = res;
+      }
+    });
+  }
 
   get totalExercises(): number {
     return this.exercises.length;
   }
 
-  get completedExercises(): number {
-    return this.exercises.filter((exercise) => exercise.completedToday).length;
-  }
-
-  get progressPercent(): number {
-    if (this.totalExercises === 0) {
-      return 0;
-    }
-
-    return Math.round((this.completedExercises / this.totalExercises) * 100);
+  get videoExercises(): number {
+    return this.exercises.filter((exercise) => exercise.hasVideo && exercise.videoType === 'youtube').length;
   }
 
   openExercise(exercise: ExerciseItem): void {
@@ -54,28 +55,33 @@ export class ExercisesPage {
     this.activeExercise = null;
   }
 
-  completeActiveExercise(): void {
-    this.setActiveExerciseCompletion(true);
-  }
-
-  undoActiveExerciseCompletion(): void {
-    this.setActiveExerciseCompletion(false);
-  }
-
-  resetTodaySession(): void {
-    this.exercises = this.exercises.map((exercise) => ({ ...exercise, completedToday: false }));
-    this.activeExercise = this.activeExercise ? this.findExercise(this.activeExercise.id) ?? null : null;
-    this.clearSavedCompletedIds();
-  }
-
   getSafeVideoUrl(exercise: ExerciseItem | null): SafeResourceUrl | null {
-    if (!exercise?.videoUrl) {
+    if (!exercise?.hasVideo) {
       return null;
     }
 
-    const embedUrl = this.toEmbedVideoUrl(exercise.videoUrl);
+    const embedUrl = this.getYoutubeEmbedUrl(exercise);
 
     return embedUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl) : null;
+  }
+
+  getYoutubeEmbedUrl(exercise: ExerciseItem): string {
+    const videoId = this.extractYoutubeId(exercise.youtubeUrl);
+    if (!videoId) {
+      return '';
+    }
+
+    const startSeconds = Math.max(0, Math.floor(exercise.youtubeStartSeconds ?? 0));
+    const queryParams = new URLSearchParams({
+      modestbranding: '1',
+      rel: '0'
+    });
+
+    if (startSeconds > 0) {
+      queryParams.set('start', String(startSeconds));
+    }
+
+    return `https://www.youtube.com/embed/${videoId}?${queryParams.toString()}`;
   }
 
   @HostListener('document:keydown.escape')
@@ -83,74 +89,31 @@ export class ExercisesPage {
     this.closeTutorial();
   }
 
-  private getSavedCompletedIds(): Set<string> {
-    try {
-      const rawProgress = this.storage.getItem(this.progressStorageKey);
-      const completedIds = rawProgress ? JSON.parse(rawProgress) : [];
-
-      return Array.isArray(completedIds) ? new Set(completedIds.filter((id) => typeof id === 'string')) : new Set();
-    } catch {
-      return new Set();
-    }
-  }
-
-  private saveCompletedIds(): void {
-    const completedIds = this.exercises.filter((exercise) => exercise.completedToday).map((exercise) => exercise.id);
-    this.storage.setItem(this.progressStorageKey, JSON.stringify(completedIds));
-  }
-
-  private clearSavedCompletedIds(): void {
-    this.storage.removeItem(this.progressStorageKey);
-  }
-
-  private setActiveExerciseCompletion(completedToday: boolean): void {
-    const activeExercise = this.activeExercise;
-
-    if (!activeExercise || activeExercise.completedToday === completedToday) {
-      return;
-    }
-
-    this.exercises = this.exercises.map((exercise) =>
-      exercise.id === activeExercise.id ? { ...exercise, completedToday } : exercise
-    );
-    this.activeExercise = this.findExercise(activeExercise.id) ?? null;
-    this.saveCompletedIds();
-  }
-
   private findExercise(exerciseId: string): ExerciseItem | undefined {
     return this.exercises.find((exercise) => exercise.id === exerciseId);
   }
 
-  private getTodayDateKey(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
-  }
-
-  private toEmbedVideoUrl(videoUrl: string): string | null {
+  private extractYoutubeId(youtubeUrl: string): string {
     try {
-      const parsedUrl = new URL(videoUrl);
+      const parsedUrl = new URL(youtubeUrl);
       const hostname = parsedUrl.hostname.replace(/^www\./, '');
 
-      if (
-        parsedUrl.protocol !== 'https:' ||
-        !environment.allowedExternalHosts.some((allowedHost) => allowedHost === parsedUrl.hostname)
-      ) {
-        return null;
+      if (hostname === 'youtube.com' || hostname === 'm.youtube.com') {
+        const watchId = parsedUrl.searchParams.get('v');
+        const embedMatch = parsedUrl.pathname.match(/^\/embed\/([A-Za-z0-9_-]{6,})/);
+        const videoId = watchId || embedMatch?.[1] || '';
+
+        return /^[A-Za-z0-9_-]{6,}$/.test(videoId) ? videoId : '';
       }
 
-      const youtubeId = parsedUrl.searchParams.get('v') ?? parsedUrl.pathname.replace('/embed/', '');
-
-      if ((hostname === 'youtube.com' || hostname === 'm.youtube.com') && /^[A-Za-z0-9_-]{6,}$/.test(youtubeId)) {
-        return `https://www.youtube-nocookie.com/embed/${youtubeId}?modestbranding=1&rel=0&showinfo=0`;
+      if (hostname === 'youtu.be') {
+        const videoId = parsedUrl.pathname.replace('/', '');
+        return /^[A-Za-z0-9_-]{6,}$/.test(videoId) ? videoId : '';
       }
     } catch {
-      return null;
+      return '';
     }
 
-    return null;
+    return '';
   }
 }

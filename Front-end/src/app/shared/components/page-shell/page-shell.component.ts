@@ -8,7 +8,6 @@ import type { PageTheme } from '../../models';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './page-shell.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageShellComponent {
   @Input() theme: PageTheme = 'home';

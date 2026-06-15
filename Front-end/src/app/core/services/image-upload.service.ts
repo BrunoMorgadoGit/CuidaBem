@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpProgressEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { compressImage, base64ToBlob } from '../../shared/utils/image-compression.util';
 
@@ -30,19 +31,24 @@ export class ImageUploadService {
         formData.append('id_idoso', idosoId.toString());
       }
 
-      const response = await this.http.post<{ data: UploadResponse }>(
-        `${environment.apiUrl}/api/uploads/imagem`,
-        formData
-      ).toPromise();
+      const response = await firstValueFrom(
+        this.http.post<{ data: UploadResponse }>(
+          `${environment.apiUrl}/uploads/imagem`,
+          formData
+        ).pipe(timeout(30000))
+      );
 
       if (!response?.data) {
         throw new Error('Resposta inválida do servidor');
       }
 
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
-      throw new Error('Falha ao enviar imagem. Tente novamente.');
+      if (error.name === 'TimeoutError') {
+        throw new Error('O envio da imagem excedeu o limite de tempo (30s). Verifique sua conexão.');
+      }
+      throw error;
     }
   }
 

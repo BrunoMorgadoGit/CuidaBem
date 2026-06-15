@@ -1,21 +1,21 @@
 <section class="page-shell">
   <header class="simple-header">
     <a routerLink="/tabs/home">Voltar</a>
-    <strong>Atividades</strong>
+    <strong>Histórico Completo</strong>
   </header>
 
   <section class="activity-hero">
     <div>
-      <span>Recomendado para hoje</span>
-      <h1>Movimento e memoria</h1>
-      <p>Atividades leves para manter rotina, autonomia e bem-estar.</p>
+      <span>Registro detalhado</span>
+      <h1>Histórico do Cuidado</h1>
+      <p>Consulte todas as ações do cuidado com filtros por período e tipo.</p>
     </div>
-    <strong>EX</strong>
+    <strong>HC</strong>
   </section>
 
   <section class="activity-list-v2">
     <article *ngFor="let activity of activities; trackBy: trackByActivityId" class="activity-card-v2">
-      <div class="activity-card-icon" [ngClass]="activityTone(activity.icon)">
+      <div class="activity-card-icon" [ngClass]="activityCardTone(activity.icon)">
         {{ activityIconLabel(activity.icon) }}
       </div>
       <div class="activity-card-content">
@@ -30,6 +30,50 @@
         <span>▶</span>
       </button>
     </article>
+  </section>
+
+  <section class="activity-section activity-history-section">
+    <div class="activity-history-toolbar">
+      <div>
+        <h2>Histórico Completo</h2>
+        <p>{{ filteredLogs.length }} registro(s) encontrados</p>
+      </div>
+
+      <div class="activity-filter-group">
+        <span class="filter-label">Período</span>
+        <button
+          type="button"
+          *ngFor="let filter of periodFilters"
+          class="filter-chip"
+          [ngClass]="{ active: selectedPeriod === filter.value }"
+          (click)="setPeriodFilter(filter.value)"
+        >{{ filter.label }}</button>
+      </div>
+
+      <div class="activity-filter-group">
+        <span class="filter-label">Tipo</span>
+        <button
+          type="button"
+          *ngFor="let filter of groupFilters"
+          class="filter-chip"
+          [ngClass]="{ active: selectedGroup === filter.value }"
+          (click)="setGroupFilter(filter.value)"
+        >{{ filter.label }}</button>
+      </div>
+    </div>
+
+    <div class="activity-feed" *ngIf="filteredLogs.length > 0">
+      <article class="activity-entry" *ngFor="let log of filteredLogs; trackBy: trackByLogId">
+        <span class="activity-icon" [ngClass]="activityTone(log)">{{ activityIcon(log) }}</span>
+        <div class="activity-copy">
+          <p>{{ activityLabel(log) }}</p>
+          <small>{{ activitySummary(log) }}</small>
+        </div>
+      </article>
+    </div>
+    <div *ngIf="filteredLogs.length === 0" class="activity-empty-state">
+      Nenhum registro encontrado para os filtros selecionados.
+    </div>
   </section>
 </section>
 

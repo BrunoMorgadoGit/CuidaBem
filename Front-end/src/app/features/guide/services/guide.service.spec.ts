@@ -71,4 +71,15 @@ describe('GuideService', () => {
     expect(autonomyGuide?.sections).toHaveLength(1);
     expect(autonomyGuide?.sections[0].description).toBe('Este conteúdo está em preparação.');
   });
+
+  it('accepts only practical guide routes that exist in the catalog', () => {
+    const guideService = new GuideService();
+
+    expect(guideService.hasPracticalGuideRoute('/guia/banho-de-leito')).toBe(true);
+    expect(guideService.hasPracticalGuideRoute('/guia-pratico/higiene-bucal')).toBe(true);
+    expect(guideService.hasPracticalGuideRoute('/guia/administracao-de-medicacao')).toBe(false);
+    expect(guideService.getPracticalGuideRoute('/guia/banho-de-leito')).toBe('/guia-pratico/banho-de-leito');
+    expect(guideService.getPracticalGuideRoute('/guia/transferencia-posicionamento')).toBe('/guia-pratico/transferencia-posicionamento-idoso');
+    expect(guideService.getPracticalGuideRoute('/guia/administracao-de-medicacao')).toBeNull();
+  });
 });

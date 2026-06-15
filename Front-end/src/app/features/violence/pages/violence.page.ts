@@ -12,7 +12,6 @@ import { ViolenceService } from '../services/violence.service';
   imports: [CommonModule, RouterLink],
   templateUrl: './violence.page.html',
   styleUrls: ['./violence.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViolencePage {
   private readonly violenceService = inject(ViolenceService);

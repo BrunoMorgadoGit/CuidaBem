@@ -1,67 +1,37 @@
 import { Request, Response } from 'express';
-import { PatientService } from './patient.service';
-import { patientRepository } from './patient.repository';
-import { sendSuccess, sendError } from '../../shared/utils/response.helper';
-import { GetDashboardResponseDto, ToggleTaskResponseDto } from './patient.dto';
+import { sendSuccess } from '../../shared/utils/response.helper';
+import { patientService } from './patient.service';
+import type { CreatePatientDto, PatientIdParamDto, UpdatePatientDto } from './patient.schema';
 
-const patientService = new PatientService(patientRepository);
-
-export function getDashboard(req: Request, res: Response): void {
-  const { id } = req.params as Record<string, string>;
-
-  if (!id) {
-    sendError(res, 'Parâmetro "id" do paciente é obrigatório.', 400, 'MISSING_PATIENT_ID');
-    return;
-  }
-
-  const dashboard = patientService.getDashboard(id);
-
-  if (!dashboard) {
-    sendError(
-      res,
-      `Paciente com ID "${id}" não encontrado no sistema.`,
-      404,
-      'PATIENT_NOT_FOUND'
-    );
-    return;
-  }
-
-  sendSuccess<GetDashboardResponseDto>(
-    res,
-    dashboard,
-    `Dashboard do paciente "${dashboard.patient.name}" carregado com sucesso.`
-  );
+export async function getCurrentPatient(req: Request, res: Response): Promise<void> {
+  const patient = await patientService.getCurrent(req.user!.sub);
+  sendSuccess(res, patient, 'Paciente atual carregado com sucesso.');
 }
 
-export function toggleTaskStatus(req: Request, res: Response): void {
-  const { id: patientId, taskId } = req.params as Record<string, string>;
+export async function listPatients(req: Request, res: Response): Promise<void> {
+  const patients = await patientService.findAll(req.user!.sub);
+  sendSuccess(res, patients, `${patients.length} paciente(s) encontrado(s).`);
+}
 
-  if (!patientId || !taskId) {
-    sendError(
-      res,
-      'Parâmetros "id" (paciente) e "taskId" são obrigatórios.',
-      400,
-      'MISSING_PARAMS'
-    );
-    return;
-  }
+export async function getPatient(req: Request, res: Response): Promise<void> {
+  const { id } = req.params as unknown as PatientIdParamDto;
+  const patient = await patientService.findById(req.user!.sub, id);
+  sendSuccess(res, patient, 'Paciente carregado com sucesso.');
+}
 
-  const result = patientService.toggleTaskStatus(patientId, taskId);
+export async function createPatient(req: Request, res: Response): Promise<void> {
+  const patient = await patientService.create(req.user!.sub, req.body as CreatePatientDto);
+  sendSuccess(res, patient, 'Paciente criado com sucesso.', 201);
+}
 
-  if (!result) {
-    sendError(
-      res,
-      `Paciente "${patientId}" ou Tarefa "${taskId}" não encontrada no sistema.`,
-      404,
-      'RESOURCE_NOT_FOUND'
-    );
-    return;
-  }
+export async function updatePatient(req: Request, res: Response): Promise<void> {
+  const { id } = req.params as unknown as PatientIdParamDto;
+  const patient = await patientService.update(req.user!.sub, id, req.body as UpdatePatientDto);
+  sendSuccess(res, patient, 'Paciente atualizado com sucesso.');
+}
 
-  const responseData: ToggleTaskResponseDto = {
-    message: result.message,
-    dashboard: result.dashboard,
-  };
-
-  sendSuccess<ToggleTaskResponseDto>(res, responseData, result.message);
+export async function deletePatient(req: Request, res: Response): Promise<void> {
+  const { id } = req.params as unknown as PatientIdParamDto;
+  const result = await patientService.delete(req.user!.sub, id);
+  sendSuccess(res, result, 'Paciente removido com sucesso.');
 }

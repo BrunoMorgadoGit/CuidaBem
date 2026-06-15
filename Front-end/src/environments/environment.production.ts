@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'http://localhost:3000/api',
   appUrl: '',
   supportUrl: '',
   maxImageUploadBytes: 5 * 1024 * 1024,

@@ -8,6 +8,5 @@ import { RouterLink } from '@angular/router';
   imports: [CommonModule, RouterLink],
   templateUrl: './onboarding.page.html',
   styleUrls: ['./onboarding.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OnboardingPage {}
+export class OnboardingPage { }

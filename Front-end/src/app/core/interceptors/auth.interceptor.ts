@@ -33,22 +33,22 @@ export const authInterceptor: HttpInterceptorFn = (requisicao, proximo) => {
 
           const refreshToken = sessaoService.obterRefreshToken();
           if (refreshToken) {
-            return http.post<{ dados: { token: string; refreshToken: string } }>(
-              `${urlApi}/api/auth/refresh`,
+            return http.post<{ data: { token: string; refreshToken: string } }>(
+              `${urlApi}/auth/refresh`,
               { refreshToken }
             ).pipe(
               switchMap((res) => {
                 renovando = false;
-                sessaoService.definirToken(res.dados.token, res.dados.refreshToken);
+                sessaoService.definirToken(res.data.token, res.data.refreshToken);
                 sessaoService.setSession({ 
                   ...sessao, 
-                  accessToken: res.dados.token, 
-                  refreshToken: res.dados.refreshToken 
+                  accessToken: res.data.token, 
+                  refreshToken: res.data.refreshToken 
                 });
-                subjectToken.next(res.dados.token);
+                subjectToken.next(res.data.token);
                 
                 return proximo(requisicao.clone({ 
-                  setHeaders: { Authorization: `Bearer ${res.dados.token}` } 
+                  setHeaders: { Authorization: `Bearer ${res.data.token}` } 
                 }));
               }),
               catchError((err) => {

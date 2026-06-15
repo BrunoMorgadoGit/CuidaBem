@@ -6,10 +6,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Elevar os calcanhares',
     category: 'Circulação',
     icon: 'LEG',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 repetições',
-    description: 'Ajuda na circulação das pernas e no fortalecimento da panturrilha.',
-    videoUrl: 'https://www.youtube.com/watch?v=9cKe2I-Ta14',
+    description: 'Elevar os calcanhares auxilia na mobilidade, circulação e manutenção funcional quando realizado com supervisão.',
+    youtubeUrl: 'https://www.youtube.com/watch?v=lPAnWf3AE4E',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se com a coluna apoiada.',
       'Mantenha os pés apoiados no chão.',
@@ -22,7 +25,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Pare se sentir dor ou tontura.',
       'Mantenha o idoso sentado e seguro.'
     ],
-    completedToday: false,
     tone: 'blue'
   },
   {
@@ -30,10 +32,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Extensão de pernas sentado',
     category: 'Força',
     icon: 'ST',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 repetições cada perna',
     description: 'Fortalece as pernas e ajuda na mobilidade.',
-    videoUrl: 'https://www.youtube.com/watch?v=BmnTbnDZ8LE',
+    youtubeUrl: 'https://www.youtube.com/watch?v=49E33qYS-Ms',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se com a coluna reta.',
       'Mantenha os pés no chão.',
@@ -46,18 +51,20 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Faça o movimento devagar.',
       'Pare se houver dor.'
     ],
-    completedToday: false,
     tone: 'green'
   },
   {
     id: 'exercise-toe-raise',
-    title: 'Ponta dos pés',
+    title: 'Ponta dos pés com apoio',
     category: 'Equilíbrio',
     icon: 'SH',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 repetições',
     description: 'Trabalha equilíbrio e ativação das pernas.',
-    videoUrl: 'https://www.youtube.com/watch?v=hODsBVy5hIs',
+    youtubeUrl: 'https://www.youtube.com/watch?v=ss-0QeJsqO0',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Fique sentado ou em pé com apoio.',
       'Eleve os calcanhares lentamente.',
@@ -70,7 +77,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Não faça sem supervisão se houver risco de queda.',
       'Evite movimentos bruscos.'
     ],
-    completedToday: false,
     tone: 'orange'
   },
   {
@@ -78,10 +84,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Rotação de ombros',
     category: 'Mobilidade',
     icon: 'OMB',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 círculos para frente e para trás',
     description: 'Ajuda na mobilidade dos ombros e reduz tensão.',
-    videoUrl: 'https://www.youtube.com/watch?v=7mAwmvfL4VI',
+    youtubeUrl: 'https://www.youtube.com/watch?v=SlHIolHXWPw',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se confortavelmente.',
       'Relaxe os braços ao lado do corpo.',
@@ -94,7 +103,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Pare se sentir dor no ombro.',
       'Faça movimentos lentos.'
     ],
-    completedToday: false,
     tone: 'purple'
   },
   {
@@ -102,10 +110,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Flexão dos braços sentado',
     category: 'Força',
     icon: 'ARM',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 repetições',
     description: 'Fortalece braços e auxilia em tarefas diárias.',
-    videoUrl: 'https://www.youtube.com/watch?v=qreMDL_hHos',
+    youtubeUrl: 'https://www.youtube.com/watch?v=FdexNt6Sblc',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se com boa postura.',
       'Mantenha os braços ao lado do corpo.',
@@ -118,7 +129,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Evite se houver dor no braço ou ombro.',
       'Mantenha o movimento controlado.'
     ],
-    completedToday: false,
     tone: 'red'
   },
   {
@@ -126,10 +136,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Tirar o quadril da cadeira',
     category: 'Core',
     icon: 'CORE',
-    sets: 3,
-    reps: '10 repetições',
-    description: 'Ajuda na força do tronco e na mobilidade funcional.',
-    videoUrl: 'https://www.youtube.com/watch?v=0f__v22nRwg',
+    sets: '3 séries',
+    reps: '8 a 10 repetições',
+    description: 'Movimento funcional leve para força de quadril e pernas, inspirado no treino de levantar da cadeira com segurança.',
+    youtubeUrl: 'https://www.youtube.com/watch?v=XOFyhUn8oS0',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se em uma cadeira firme.',
       'Apoie bem os pés no chão.',
@@ -142,7 +155,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Não faça se houver risco de queda.',
       'O cuidador deve acompanhar de perto.'
     ],
-    completedToday: false,
     tone: 'cyan'
   },
   {
@@ -150,10 +162,13 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
     title: 'Círculos com tornozelos',
     category: 'Circulação',
     icon: 'TOR',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 círculos cada pé',
     description: 'Estimula circulação e mobilidade dos tornozelos.',
-    videoUrl: 'https://www.youtube.com/watch?v=6PVDpWX4fnY',
+    youtubeUrl: 'https://www.youtube.com/watch?v=RKhGwryg3mo',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se confortavelmente.',
       'Levante levemente um pé.',
@@ -166,42 +181,20 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Faça o movimento devagar.',
       'Pare se sentir dor.'
     ],
-    completedToday: false,
     tone: 'blue'
-  },
-  {
-    id: 'exercise-arm-raise',
-    title: 'Elevação dos braços',
-    category: 'Mobilidade',
-    icon: 'BRA',
-    sets: 3,
-    reps: '10 repetições',
-    description: 'Melhora a mobilidade dos ombros e braços.',
-    videoUrl: 'https://www.youtube.com/watch?v=I9sFOw8V4vU',
-    steps: [
-      'Sente-se com a coluna reta.',
-      'Mantenha os braços relaxados.',
-      'Eleve os braços lentamente até onde for confortável.',
-      'Desça devagar.',
-      'Repita o movimento.'
-    ],
-    precautions: [
-      'Não ultrapasse o limite de conforto.',
-      'Evite se houver dor intensa no ombro.',
-      'Faça sem pressa.'
-    ],
-    completedToday: false,
-    tone: 'purple'
   },
   {
     id: 'exercise-open-close-hands',
     title: 'Abrir e fechar as mãos',
     category: 'Mobilidade',
     icon: 'MAO',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 repetições',
     description: 'Estimula a circulação e mobilidade das mãos.',
-    videoUrl: 'https://www.youtube.com/watch?v=0y427P9Z_3I',
+    youtubeUrl: 'https://www.youtube.com/watch?v=6-_wHgQuO8Q',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Mantenha os braços apoiados.',
       'Abra bem as mãos.',
@@ -214,18 +207,46 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Pare se houver dor.',
       'Faça movimentos leves.'
     ],
-    completedToday: false,
     tone: 'green'
+  },
+  {
+    id: 'exercise-arm-raise',
+    title: 'Elevação dos braços',
+    category: 'Mobilidade',
+    icon: 'BRA',
+    sets: '3 séries',
+    reps: '10 repetições',
+    description: 'Melhora a mobilidade dos ombros e braços.',
+    youtubeUrl: 'https://www.youtube.com/watch?v=FdexNt6Sblc',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
+    steps: [
+      'Sente-se com a coluna reta.',
+      'Mantenha os braços relaxados.',
+      'Eleve os braços lentamente até onde for confortável.',
+      'Desça devagar.',
+      'Repita o movimento.'
+    ],
+    precautions: [
+      'Não ultrapasse o limite de conforto.',
+      'Evite se houver dor intensa no ombro.',
+      'Faça sem pressa.'
+    ],
+    tone: 'purple'
   },
   {
     id: 'exercise-seated-side-stretch',
     title: 'Alongamento lateral sentado',
     category: 'Alongamento',
     icon: 'AL',
-    sets: 3,
+    sets: '3 séries',
     reps: '10 segundos cada lado',
     description: 'Ajuda a alongar o tronco e melhorar a mobilidade.',
-    videoUrl: 'https://www.youtube.com/watch?v=g4HpK7vd1VI',
+    youtubeUrl: 'https://www.youtube.com/watch?v=sIhbT2CbdBs',
+    youtubeStartSeconds: 0,
+    videoType: 'youtube',
+    hasVideo: true,
     steps: [
       'Sente-se com a coluna reta.',
       'Apoie bem os pés no chão.',
@@ -238,7 +259,6 @@ export const MOCK_EXERCISES: readonly ExerciseItem[] = [
       'Evite movimentos rápidos.',
       'Pare se sentir dor ou tontura.'
     ],
-    completedToday: false,
     tone: 'orange'
   }
 ];

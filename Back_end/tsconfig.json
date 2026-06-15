@@ -24,5 +24,19 @@
     "moduleResolution": "node16"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "prisma"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "prisma",
+    "src/generated",
+    "src/**/*.spec.ts",
+    "src/modules/acompanhamento",
+    "src/modules/alimentacao",
+    "src/modules/doenca",
+    "src/modules/educational",
+    "src/modules/health",
+    "src/modules/idoso",
+    "src/modules/medicamento",
+    "src/modules/upload"
+  ]
 }

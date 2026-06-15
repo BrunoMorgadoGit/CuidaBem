@@ -419,6 +419,160 @@
   text-align: left;
 }
 
+/* Visual refresh: Practical Guide */
+.guide-feature-card {
+  min-height: 106px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(255, 255, 255, 0.20), transparent 28%),
+    linear-gradient(135deg, #3448D9 0%, #5B35D9 56%, #7C2BE8 100%);
+  padding: 18px;
+  box-shadow: 0 18px 42px rgba(52, 72, 217, 0.20);
+}
+
+.guide-feature-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  font-size: 12px;
+}
+
+.guide-feature-card h2 {
+  font-size: 19px;
+}
+
+.guide-feature-card b {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 7px 11px;
+}
+
+.guide-arrow {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+}
+
+.guide-category-section,
+.guide-tutorial-section {
+  gap: 12px;
+}
+
+.guide-divider {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guide-divider::before,
+.guide-divider::after {
+  background: #E3E8F2;
+}
+
+.guide-list,
+.guide-tutorial-grid {
+  gap: 12px;
+}
+
+.guide-card,
+.app-page-shell .guide-card,
+.guide-tutorial-card {
+  min-height: 92px;
+  border: 1px solid rgba(226, 232, 240, 0.94);
+  border-radius: 20px;
+  background: #FFFFFF;
+  padding: 16px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.guide-card[href]:hover,
+.app-page-shell .guide-card[href]:hover,
+.guide-tutorial-card:hover {
+  border-color: rgba(52, 72, 217, 0.26);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(52, 72, 217, 0.10);
+}
+
+.guide-item-icon,
+.guide-tutorial-card > span {
+  width: 48px;
+  height: 48px;
+  border-radius: 17px;
+  font-size: 11px;
+}
+
+.guide-card h3,
+.guide-tutorial-card h3 {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.guide-item-tag,
+.guide-tutorial-card small {
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 0 9px;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.guide-item-arrow,
+.guide-tutorial-card > b {
+  width: 38px;
+  height: 38px;
+  background: #EEF1FF;
+  color: var(--primary);
+}
+
+.guide-tutorial-card > b {
+  background: linear-gradient(135deg, var(--primary), #5B35D9);
+  color: #FFFFFF;
+}
+
+.guide-tutorial-card > b.no-video {
+  background: #EEF2F7;
+  color: #94A3B8;
+}
+
+.guide-tutorial-card:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.guide-tutorial-card:disabled:hover {
+  border-color: rgba(226, 232, 240, 0.94);
+  transform: none;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+@media (min-width: 760px) {
+  .app-page-shell .guide-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guide-tutorial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .guide-feature-card,
+  .guide-card,
+  .guide-tutorial-card {
+    border-radius: 19px;
+  }
+
+  .guide-tutorial-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .guide-tutorial-card > b {
+    grid-column: auto;
+  }
+}
+
 .guide-tutorial-card:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -454,3 +608,45 @@
   .guide-list { grid-template-columns: 1fr 1fr 1fr; }
 }
 
+/* Responsive web layout: Practical Guide */
+@media (min-width: 1024px) {
+  .guide-feature-card {
+    min-height: 128px;
+  }
+
+  .guide-category-section,
+  .guide-tutorial-section {
+    gap: 16px;
+  }
+
+  .guide-list {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  .guide-card,
+  .app-page-shell .guide-card {
+    min-height: 104px;
+  }
+
+  .guide-tutorial-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .guide-list,
+  .guide-tutorial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  .guide-list,
+  .guide-tutorial-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+}

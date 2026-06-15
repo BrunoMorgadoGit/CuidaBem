@@ -40,7 +40,8 @@ describe('app routes', () => {
       'agenda',
       'medications',
       'health',
-      'profile'
+      'profile',
+      'calendario'
     ]);
     expect(tabsRoute?.children?.find((route) => route.path === '')?.redirectTo).toBe('home');
   });

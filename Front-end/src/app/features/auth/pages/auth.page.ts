@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import type { AuthMode } from '../../../core/models';
 import { AppStateComponent } from '../../../shared/components';
-import { sanitizeText } from '../../../shared/utils';
-import { validarForcaSenha } from '../../../shared/validators/custom.validators';
+import { sanitizeText, strongPasswordValidator } from '../../../shared/utils';
 
 import { PatientService, UserService, AuthSessionService } from '../../../core/services';
 
@@ -18,7 +17,6 @@ type AuthControlName = 'name' | 'elderlyName' | 'email' | 'password';
   imports: [AppStateComponent, CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AuthPage {
   private readonly route = inject(ActivatedRoute);
@@ -26,6 +24,7 @@ export class AuthPage {
   private readonly userService = inject(UserService);
   private readonly patientService = inject(PatientService);
   private readonly authSession = inject(AuthSessionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly mode: AuthMode = this.route.snapshot.data['mode'] === 'register' ? 'register' : 'login';
   readonly authForm = new FormGroup({
@@ -33,22 +32,22 @@ export class AuthPage {
       nonNullable: true,
       validators: this.mode === 'register'
         ? [
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(80),
-            Validators.pattern(/^[A-Za-zÀ-ÿ' -]+$/)
-          ]
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(80),
+          Validators.pattern(/^[A-Za-zÀ-ÿ' -]+$/)
+        ]
         : []
     }),
     elderlyName: new FormControl('', {
       nonNullable: true,
       validators: this.mode === 'register'
         ? [
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(80),
-            Validators.pattern(/^[A-Za-zÀ-ÿ' -]+$/)
-          ]
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(80),
+          Validators.pattern(/^[A-Za-zÀ-ÿ' -]+$/)
+        ]
         : []
     }),
     email: new FormControl('', {
@@ -58,11 +57,12 @@ export class AuthPage {
     password: new FormControl('', {
       nonNullable: true,
       validators: this.mode === 'register'
-        ? [Validators.required, Validators.maxLength(128), validarForcaSenha]
+        ? [Validators.required, Validators.maxLength(128), strongPasswordValidator()]
         : [Validators.required, Validators.minLength(6), Validators.maxLength(128)]
     })
   });
   submitAttempted = false;
+  addTaskError = ''; // Reuse template err slot
 
   get isRegister(): boolean {
     return this.mode === 'register';
@@ -83,33 +83,47 @@ export class AuthPage {
       return;
     }
 
-    if (this.isRegister) {
-      const caregiverName = this.authForm.controls.name.value || 'Cuidador';
-      const elderlyName = this.authForm.controls.elderlyName.value || 'Idoso';
-      
-      const currentUser = this.userService.getCurrentUser();
-      this.userService.setCurrentUser({
-        ...currentUser,
-        name: caregiverName
-      });
+    const email = this.authForm.controls.email.value;
+    const password = this.authForm.controls.password.value;
 
-      const currentPatient = this.patientService.getCurrentPatient();
-      this.patientService.setCurrentPatient({
-        ...currentPatient,
-        name: elderlyName
+    if (this.isRegister) {
+      const caregiverName = this.authForm.controls.name.value;
+      const elderlyName = this.authForm.controls.elderlyName.value;
+
+      this.authSession.register(caregiverName, elderlyName, email, password).subscribe({
+        next: (res) => {
+          this.authSession.definirToken(res.data.token, res.data.refreshToken);
+          this.authSession.setSession({
+            accessToken: res.data.token,
+            refreshToken: res.data.refreshToken,
+            expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+          });
+          this.userService.setCurrentUser(res.data.user);
+          this.patientService.setCurrentPatient(res.data.currentPatient);
+          void this.router.navigateByUrl('/tabs/home');
+        },
+        error: (err) => {
+          this.addTaskError = err.error?.message || 'Erro ao realizar o cadastro.';
+        }
+      });
+    } else {
+      this.authSession.login(email, password).subscribe({
+        next: (res) => {
+          this.authSession.definirToken(res.data.token, res.data.refreshToken);
+          this.authSession.setSession({
+            accessToken: res.data.token,
+            refreshToken: res.data.refreshToken,
+            expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+          });
+          this.userService.setCurrentUser(res.data.user);
+          this.patientService.setCurrentPatient(res.data.currentPatient);
+          void this.router.navigateByUrl('/tabs/home');
+        },
+        error: (err) => {
+          this.addTaskError = err.error?.message || 'E-mail ou senha inválidos.';
+        }
       });
     }
-
-    const mockToken = 'mock-jwt-token';
-    const mockRefresh = 'mock-refresh-token';
-    this.authSession.definirToken(mockToken, mockRefresh);
-    this.authSession.setSession({
-      accessToken: mockToken,
-      refreshToken: mockRefresh,
-      expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-    });
-
-    void this.router.navigateByUrl('/tabs/home');
   }
 
   fieldError(controlName: AuthControlName): string {
@@ -139,8 +153,8 @@ export class AuthPage {
       return 'Use apenas letras, espacos, apostrofo ou hifen.';
     }
 
-    if (control.hasError('senhaFraca')) {
-      return 'A senha deve ter 8+ caracteres, com maiúscula, minúscula, número e símbolo.';
+    if (control.hasError('strongPassword')) {
+      return 'A senha deve ter 10+ caracteres, com maiúscula, minúscula, número e símbolo.';
     }
 
     return 'Revise este campo.';

@@ -1,8 +1,10 @@
 
 export interface JwtPayload {
-  sub: number;
+  sub: string;
+  accountId: string;
   email: string;
-  nome: string;
+  name: string;
+  role: string;
   iat?: number;
   exp?: number;
 }
@@ -10,7 +12,7 @@ export interface JwtPayload {
 declare global {
   namespace Express {
     interface Request {
-      cuidador?: JwtPayload;
+      user?: JwtPayload;
     }
   }
 }

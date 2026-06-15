@@ -8,7 +8,6 @@ export type AppStateType = 'loading' | 'empty' | 'error' | 'success';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './app-state.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppStateComponent {
   @Input() type: AppStateType = 'empty';

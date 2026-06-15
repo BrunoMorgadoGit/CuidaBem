@@ -1,0 +1,491 @@
+/* ─── Care Team Header ─── */
+.care-team-header-extra {
+  display: grid;
+  gap: 4px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 12px 14px;
+}
+
+.care-team-header-extra strong {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.care-team-header-extra span {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* ─── Screen ─── */
+.care-team-screen {
+  display: grid;
+  gap: 20px;
+}
+
+/* ─── Patient Card ─── */
+.care-team-patient-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.patient-avatar {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #3448D9, #A000EE);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.patient-info {
+  min-width: 0;
+}
+
+.patient-label {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.patient-info h2 {
+  margin: 4px 0 0;
+  color: var(--text-primary, #1e293b);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.patient-info p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.patient-condition {
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+}
+
+/* ─── Feedback ─── */
+.care-team-feedback {
+  margin: 0;
+  border-radius: 14px;
+  background: #eef1ff;
+  color: #3448D9;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ─── Loading / Error ─── */
+.care-team-loading,
+.care-team-error {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  min-height: 120px;
+  border-radius: 18px;
+  background: #f8fafc;
+  padding: 24px;
+  text-align: center;
+}
+
+.care-team-loading span,
+.care-team-error p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ─── Members Section ─── */
+.members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.members-header h3 {
+  margin: 2px 0 0;
+  color: var(--text-primary, #1e293b);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.members-count {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.members-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.members-empty {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  padding: 32px 16px;
+}
+
+/* ─── Member Card ─── */
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.member-card:hover {
+  border-color: rgba(52, 72, 217, 0.2);
+  box-shadow: 0 8px 24px rgba(52, 72, 217, 0.08);
+}
+
+.member-card.is-responsible {
+  border-color: rgba(52, 72, 217, 0.2);
+  background: #fafbff;
+}
+
+.member-avatar {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 14px;
+  background: #eef1ff;
+  color: #3448D9;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.member-card.is-responsible .member-avatar {
+  background: linear-gradient(135deg, #3448D9, #6B35D9);
+  color: #ffffff;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-info h4 {
+  margin: 0;
+  color: var(--text-primary, #1e293b);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.member-info small {
+  display: block;
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Role Badge ─── */
+.member-role-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 8px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.member-role-badge.responsible {
+  background: #eef1ff;
+  color: #3448D9;
+}
+
+.member-role-badge.family {
+  background: #eafff3;
+  color: #05b86f;
+}
+
+.member-role-badge.caregiver {
+  background: #fff8df;
+  color: #d97706;
+}
+
+.member-role-badge.nurse {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* ─── Member Actions ─── */
+.member-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-icon:hover {
+  background: #eef1ff;
+  border-color: rgba(52, 72, 217, 0.2);
+  color: #3448D9;
+}
+
+.btn-icon.btn-danger:hover {
+  background: #fef2f2;
+  border-color: rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+}
+
+/* ─── Edit Role Inline ─── */
+.member-edit-role {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.role-select {
+  min-height: 36px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 12px;
+  background: #f8fafc;
+  color: var(--text-primary, #1e293b);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.btn:hover { filter: brightness(0.96); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #3448D9, #5B35D9);
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(52, 72, 217, 0.18);
+}
+
+.btn-outline {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-sm {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+/* ─── Add Member Modal ─── */
+.add-member-backdrop {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.48);
+  padding: 18px;
+}
+
+.add-member-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 100%);
+  max-height: 90vh;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+}
+
+.add-member-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #3448D9 0%, #5B35D9 58%, #A000EE 100%);
+  color: #ffffff;
+  padding: 20px 24px;
+}
+
+.add-member-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.btn-close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.add-member-body {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+}
+
+.form-field span {
+  color: var(--text-primary, #1e293b);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-field input,
+.form-field select {
+  min-height: 44px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 14px;
+  background: #f8fafc;
+  color: var(--text-primary, #1e293b);
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: 3px solid rgba(52, 72, 217, 0.18);
+  border-color: rgba(52, 72, 217, 0.4);
+}
+
+.add-member-error {
+  margin: 0;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.add-member-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 16px 24px 20px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 560px) {
+  .members-header {
+    display: grid;
+    gap: 12px;
+  }
+
+  .member-card {
+    flex-wrap: wrap;
+  }
+
+  .member-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .add-member-modal {
+    border-radius: 22px 22px 0 0;
+  }
+
+  .add-member-backdrop {
+    align-items: end;
+    padding: 8px;
+  }
+
+  .add-member-footer {
+    display: grid;
+  }
+
+  .add-member-footer .btn {
+    width: 100%;
+  }
+}

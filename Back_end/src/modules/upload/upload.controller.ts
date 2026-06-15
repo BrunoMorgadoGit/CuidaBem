@@ -8,10 +8,10 @@ export async function uploadVideo(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const idosoId = req.body.id_idoso ? Number(req.body.id_idoso) : undefined;
+  const idosoId = req.body.id_idoso ? String(req.body.id_idoso) : undefined;
 
   const result = await uploadService.saveMetadata({
-    cuidadorId: req.cuidador!.sub,
+    cuidadorId: req.user!.sub,
     file: req.file,
     idosoId,
   });
@@ -25,10 +25,10 @@ export async function uploadImagem(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const idosoId = req.body.id_idoso ? Number(req.body.id_idoso) : undefined;
+  const idosoId = req.body.id_idoso ? String(req.body.id_idoso) : undefined;
 
   const result = await uploadService.saveMetadata({
-    cuidadorId: req.cuidador!.sub,
+    cuidadorId: req.user!.sub,
     file: req.file,
     idosoId,
   });
@@ -44,8 +44,8 @@ export async function uploadMultiplos(req: Request, res: Response): Promise<void
     return;
   }
 
-  const idosoId = req.body.id_idoso ? Number(req.body.id_idoso) : undefined;
-  const cuidadorId = req.cuidador!.sub;
+  const idosoId = req.body.id_idoso ? String(req.body.id_idoso) : undefined;
+  const cuidadorId = req.user!.sub;
 
   const results = await Promise.all(
     files.map((file) => uploadService.saveMetadata({ cuidadorId, file, idosoId }))
@@ -56,16 +56,16 @@ export async function uploadMultiplos(req: Request, res: Response): Promise<void
 
 export async function listUploads(req: Request, res: Response): Promise<void> {
   const tipo = req.query['tipo'] as string | undefined;
-  const uploads = await uploadService.findByCuidador(req.cuidador!.sub, tipo);
+  const uploads = await uploadService.findByCuidador(req.user!.sub, tipo);
   sendSuccess(res, uploads, `${uploads.length} arquivo(s) encontrado(s).`);
 }
 
 export async function getUpload(req: Request, res: Response): Promise<void> {
-  const upload = await uploadService.findById(Number(req.params['id']), req.cuidador!.sub);
+  const upload = await uploadService.findById(Number(req.params['id']), req.user!.sub);
   sendSuccess(res, upload, 'Arquivo de mídia carregado.');
 }
 
 export async function deleteUpload(req: Request, res: Response): Promise<void> {
-  const result = await uploadService.delete(Number(req.params['id']), req.cuidador!.sub);
+  const result = await uploadService.delete(Number(req.params['id']), req.user!.sub);
   sendSuccess(res, result, `Arquivo "${result.arquivo}" removido com sucesso.`);
 }

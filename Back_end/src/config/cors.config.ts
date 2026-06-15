@@ -9,6 +9,10 @@ export const corsOptions: CorsOptions = {
       callback(null, true);
       return;
     }
+    if (env.NODE_ENV === 'development' && origin && origin.startsWith('http://localhost:')) {
+      callback(null, true);
+      return;
+    }
     if (origin && allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {

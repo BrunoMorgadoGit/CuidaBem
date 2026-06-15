@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AppStateComponent } from '../../../../shared/components';
 import { trackById } from '../../../../shared/utils';
 import { GuideStepComponent, GuideVideoComponent, WarningCardComponent } from '../../components';
-import type { Exercise, ExerciseFilter, GuideSection, GuideStep, PositionCard, TutorialVideo } from '../../models';
+import type { Exercise, ExerciseFilter, GuideSection, GuideStep, PositionCard, TutorialVideo, PracticalGuide } from '../../models';
 import { GuideService } from '../../services/guide.service';
 
 @Component({
@@ -22,12 +22,13 @@ import { GuideService } from '../../services/guide.service';
   templateUrl: './guide-detail.page.html',
   styleUrls: ['./guide-detail.page.css']
 })
-export class GuideDetailPage {
+export class GuideDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly guideService = inject(GuideService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly slug = this.route.snapshot.paramMap.get('slug') ?? '';
 
-  readonly guide = this.guideService.getPracticalGuideBySlug(this.slug);
+  guide: PracticalGuide | null = null;
   readonly exerciseFilters: readonly ExerciseFilter[] = ['Todos', 'Pernas', 'Braços', 'Mãos'];
   readonly trackBySectionId = trackById<GuideSection>;
   readonly trackByStepId = trackById<GuideStep>;
@@ -38,6 +39,17 @@ export class GuideDetailPage {
   expandedExerciseId: string | null = null;
   activeExerciseVideoOwnerId: string | null = null;
   activeExerciseVideoId: string | null = null;
+
+  ngOnInit(): void {
+    this.guideService.getPracticalGuideBySlugApi(this.slug).subscribe({
+      next: (guide) => {
+        this.guide = guide;
+      },
+      error: (err) => {
+        console.error('Error loading guide detail:', err);
+      }
+    });
+  }
 
   trackByText(_index: number, item: string): string {
     return item;
@@ -90,19 +102,19 @@ export class GuideDetailPage {
   }
 
   getSectionVideo(section: GuideSection): TutorialVideo | null {
-    if (!section.videoId) {
+    if (!section.videoId || !this.guide?.videos) {
       return null;
     }
 
-    return this.guideService.getTutorialVideoById(section.videoId) ?? null;
+    return this.guide.videos.find((video) => video.id === section.videoId) ?? null;
   }
 
   getExerciseVideo(exercise: Exercise): TutorialVideo | null {
-    if (!exercise.videoId || this.activeExerciseVideoId !== exercise.videoId) {
+    if (!exercise.videoId || this.activeExerciseVideoId !== exercise.videoId || !this.guide?.videos) {
       return null;
     }
 
-    return this.guideService.getTutorialVideoById(exercise.videoId) ?? null;
+    return this.guide.videos.find((video) => video.id === exercise.videoId) ?? null;
   }
 
   private closeExerciseStateOutsideFilter(filter: ExerciseFilter): void {

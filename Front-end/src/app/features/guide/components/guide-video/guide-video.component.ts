@@ -11,7 +11,6 @@ import type { TutorialVideo } from '../../models';
   imports: [CommonModule],
   templateUrl: './guide-video.component.html',
   styleUrls: ['./guide-video.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuideVideoComponent implements OnChanges {
   private readonly sanitizer = inject(DomSanitizer);

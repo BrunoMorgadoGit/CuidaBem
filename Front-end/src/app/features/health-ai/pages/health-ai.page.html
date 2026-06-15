@@ -64,18 +64,20 @@
       <div class="camera-captured" *ngIf="capturedImage">
         <img [src]="capturedImage" alt="Imagem capturada" />
         <div class="camera-actions">
-          <button type="button" class="btn btn-outline" (click)="retakePhoto()">Tirar outra</button>
-          <button type="button" class="btn btn-primary" (click)="confirmCapture()">Usar imagem</button>
+          <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="retakePhoto()">Tirar outra</button>
+          <button type="button" class="btn btn-primary" [disabled]="isLoading" (click)="confirmCapture()">Usar imagem</button>
         </div>
       </div>
       <canvas #canvasElement style="display: none;"></canvas>
 
       <div class="ai-tool-actions">
-        <button type="button" class="btn btn-outline" (click)="chooseCaptureSource('camera')">Câmera</button>
-        <button type="button" class="btn btn-outline" (click)="chooseCaptureSource('gallery')">Galeria</button>
+        <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="chooseCaptureSource('camera')">Câmera</button>
+        <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="chooseCaptureSource('gallery')">Galeria</button>
       </div>
 
-      <button type="button" class="btn btn-primary ai-tool-submit" (click)="analyzeImage()">Analisar imagem</button>
+      <button type="button" class="btn btn-primary ai-tool-submit" [disabled]="isLoading" (click)="analyzeImage()">
+        {{ isLoading ? 'Processando...' : 'Analisar imagem' }}
+      </button>
     </section>
 
     <section class="ai-capture-panel" *ngSwitchCase="'excretions'">
@@ -104,18 +106,20 @@
       <div class="camera-captured" *ngIf="capturedImage">
         <img [src]="capturedImage" alt="Imagem capturada" />
         <div class="camera-actions">
-          <button type="button" class="btn btn-outline" (click)="retakePhoto()">Tirar outra</button>
-          <button type="button" class="btn btn-primary" (click)="confirmCapture()">Usar imagem</button>
+          <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="retakePhoto()">Tirar outra</button>
+          <button type="button" class="btn btn-primary" [disabled]="isLoading" (click)="confirmCapture()">Usar imagem</button>
         </div>
       </div>
       <canvas #canvasElement style="display: none;"></canvas>
 
       <div class="ai-tool-actions">
-        <button type="button" class="btn btn-outline" (click)="chooseCaptureSource('camera')">Câmera</button>
-        <button type="button" class="btn btn-outline" (click)="chooseCaptureSource('gallery')">Galeria</button>
+        <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="chooseCaptureSource('camera')">Câmera</button>
+        <button type="button" class="btn btn-outline" [disabled]="isLoading" (click)="chooseCaptureSource('gallery')">Galeria</button>
       </div>
 
-      <button type="button" class="btn btn-primary ai-tool-submit" (click)="analyzeImage()">Enviar imagem para analise</button>
+      <button type="button" class="btn btn-primary ai-tool-submit" [disabled]="isLoading" (click)="analyzeImage()">
+        {{ isLoading ? 'Processando...' : 'Enviar imagem para analise' }}
+      </button>
     </section>
 
     <form class="ai-behavior-panel" *ngSwitchCase="'behavior'" [formGroup]="behaviorForm" (ngSubmit)="submitBehavior()">

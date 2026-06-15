@@ -241,29 +241,29 @@ export const MOCK_EMERGENCY_CONTACTS: readonly EmergencyContact[] = [
     id: 'emergency-samu',
     number: '192',
     name: 'SAMU',
-    detail: 'Urgencias Medicas',
+    detail: 'Atendimento médico de urgência',
     tone: 'samu'
   },
   {
     id: 'emergency-firefighters',
     number: '193',
     name: 'Bombeiros',
-    detail: 'Resgate e Emergencias',
+    detail: 'Resgate, incêndios e emergências',
     tone: 'fire'
   },
   {
-    id: 'emergency-human-rights',
-    number: '100',
-    name: 'Disque 100',
-    detail: 'Denuncia Silenciosa - Direitos Humanos',
-    tone: 'rights'
+    id: 'emergency-police',
+    number: '190',
+    name: 'Polícia Militar',
+    detail: 'Emergências de segurança pública',
+    tone: 'police'
   },
   {
-    id: 'emergency-cvv',
-    number: '188',
-    name: 'CVV',
-    detail: 'Apoio Emocional 24h',
-    tone: 'cvv'
+    id: 'emergency-health-line',
+    number: '136',
+    name: 'Disque Saúde',
+    detail: 'Orientações de saúde',
+    tone: 'health'
   }
 ];
 

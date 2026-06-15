@@ -1,15 +1,13 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { BrowserStorageService } from '../../../core/services';
 import { ExercisesService } from '../services/exercises.service';
 import { ExercisesPage } from './exercises.page';
 
 function createPage(): ExercisesPage {
   const injector = Injector.create({
     providers: [
-      BrowserStorageService,
       ExercisesService,
       {
         provide: DomSanitizer,
@@ -24,99 +22,57 @@ function createPage(): ExercisesPage {
 }
 
 describe('ExercisesPage', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
-  });
-
-  it('loads exactly ten exercises and starts with empty progress', () => {
+  it('loads exactly ten recurring exercise tutorials with videos', () => {
     const page = createPage();
 
     expect(page.totalExercises).toBe(10);
-    expect(page.completedExercises).toBe(0);
-    expect(page.progressPercent).toBe(0);
+    expect(page.videoExercises).toBe(10);
     expect(page.exercises.map((exercise) => exercise.title)).toEqual([
       'Elevar os calcanhares',
       'Extensão de pernas sentado',
-      'Ponta dos pés',
+      'Ponta dos pés com apoio',
       'Rotação de ombros',
       'Flexão dos braços sentado',
       'Tirar o quadril da cadeira',
       'Círculos com tornozelos',
-      'Elevação dos braços',
       'Abrir e fechar as mãos',
+      'Elevação dos braços',
       'Alongamento lateral sentado'
     ]);
+    expect(page.exercises.every((exercise) => exercise.hasVideo && exercise.videoType === 'youtube')).toBe(true);
   });
 
-  it('opens a tutorial, completes and undoes an exercise for the current day', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 5, 7, 10, 0, 0));
-    const setItem = vi.fn();
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn(() => null),
-      setItem,
-      removeItem: vi.fn()
-    });
+  it('opens and closes a tutorial without marking the exercise as completed', () => {
     const page = createPage();
     const exercise = page.exercises[0];
 
     page.openExercise(exercise);
     expect(page.activeExercise?.id).toBe('exercise-heel-raise');
+    expect(page.exercises).toContain(exercise);
 
-    page.completeActiveExercise();
-    expect(page.completedExercises).toBe(1);
-    expect(page.progressPercent).toBe(10);
-    expect(page.activeExercise?.completedToday).toBe(true);
-    expect(setItem).toHaveBeenLastCalledWith(
-      'cuidaBemExercisesProgress_2026-06-07',
-      JSON.stringify(['exercise-heel-raise'])
-    );
-
-    page.completeActiveExercise();
-    expect(page.completedExercises).toBe(1);
-
-    page.undoActiveExerciseCompletion();
-    expect(page.completedExercises).toBe(0);
-    expect(page.progressPercent).toBe(0);
-    expect(page.activeExercise?.completedToday).toBe(false);
-    expect(setItem).toHaveBeenLastCalledWith('cuidaBemExercisesProgress_2026-06-07', JSON.stringify([]));
+    page.closeTutorial();
+    expect(page.activeExercise).toBeNull();
+    expect(page.totalExercises).toBe(10);
   });
 
-  it('restores completed exercises from dated localStorage', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 5, 7, 10, 0, 0));
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn(() => JSON.stringify(['exercise-heel-raise', 'exercise-arm-raise'])),
-      setItem: vi.fn(),
-      removeItem: vi.fn()
-    });
+  it('builds youtube embed urls with optional start seconds', () => {
     const page = createPage();
+    const exercise = {
+      ...page.exercises[1],
+      youtubeStartSeconds: 180
+    };
 
-    expect(page.completedExercises).toBe(2);
-    expect(page.progressPercent).toBe(20);
-    expect(page.progressStorageKey).toBe('cuidaBemExercisesProgress_2026-06-07');
-    expect(page.exercises.find((exercise) => exercise.id === 'exercise-heel-raise')?.completedToday).toBe(true);
-    expect(page.exercises.find((exercise) => exercise.id === 'exercise-arm-raise')?.completedToday).toBe(true);
+    expect(page.getYoutubeEmbedUrl(exercise)).toBe('https://www.youtube.com/embed/49E33qYS-Ms?modestbranding=1&rel=0&start=180');
   });
 
-  it('resets the current daily session', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 5, 7, 10, 0, 0));
-    const removeItem = vi.fn();
-    vi.stubGlobal('localStorage', {
-      getItem: vi.fn(() => JSON.stringify(['exercise-heel-raise', 'exercise-arm-raise'])),
-      setItem: vi.fn(),
-      removeItem
-    });
+  it('returns null safe video url when an exercise has no registered video', () => {
     const page = createPage();
+    const exercise = {
+      ...page.exercises[0],
+      hasVideo: false,
+      youtubeUrl: ''
+    };
 
-    page.openExercise(page.exercises[0]);
-    page.resetTodaySession();
-
-    expect(page.completedExercises).toBe(0);
-    expect(page.progressPercent).toBe(0);
-    expect(page.activeExercise?.completedToday).toBe(false);
-    expect(removeItem).toHaveBeenCalledWith('cuidaBemExercisesProgress_2026-06-07');
+    expect(page.getSafeVideoUrl(exercise)).toBeNull();
   });
 });

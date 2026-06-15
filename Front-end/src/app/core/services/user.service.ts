@@ -9,6 +9,8 @@ const DEFAULT_USER: AppUser = {
   relatedElderlyIds: ['patient-demo']
 };
 
+const CURRENT_USER_STORAGE_KEY = 'cuida_bem_user';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,7 +19,7 @@ export class UserService {
 
   constructor() {
     try {
-      const stored = localStorage.getItem('cuida_bem_user');
+      const stored = localStorage.getItem(CURRENT_USER_STORAGE_KEY);
       this.currentUser = stored ? JSON.parse(stored) : DEFAULT_USER;
     } catch {
       this.currentUser = DEFAULT_USER;
@@ -31,7 +33,14 @@ export class UserService {
   setCurrentUser(user: AppUser): void {
     this.currentUser = user;
     try {
-      localStorage.setItem('cuida_bem_user', JSON.stringify(user));
+      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(user));
+    } catch {}
+  }
+
+  clearCurrentUser(): void {
+    this.currentUser = DEFAULT_USER;
+    try {
+      localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
     } catch {}
   }
 }

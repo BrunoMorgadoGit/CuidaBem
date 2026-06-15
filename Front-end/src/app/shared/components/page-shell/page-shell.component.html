@@ -3,7 +3,24 @@
     <div class="app-page-header-inner">
       <ng-container *ngIf="title; else projectedHeader">
         <div class="app-page-title-row">
-          <span class="app-page-mark">{{ icon }}</span>
+          <span class="app-page-mark" [ngSwitch]="icon" aria-hidden="true">
+            <svg *ngSwitchCase="'GD'" viewBox="0 0 24 24" focusable="false">
+              <path d="M5.5 4.2c2.4 0 4.4.5 6.5 1.8 2.1-1.3 4.1-1.8 6.5-1.8.8 0 1.5.7 1.5 1.5v13.6c0 .5-.4.8-.9.7-2.4-.4-4.6 0-6.7 1.3-.2.1-.5.1-.8 0-2.1-1.3-4.3-1.7-6.7-1.3-.5.1-.9-.2-.9-.7V5.7c0-.8.7-1.5 1.5-1.5Zm5.3 3.6A10 10 0 0 0 6 6.2v11.6c1.7-.1 3.3.2 4.8.9V7.8Zm2.4 0v10.9c1.5-.7 3.1-1 4.8-.9V6.2c-1.7.1-3.2.5-4.8 1.6Z"></path>
+            </svg>
+            <svg *ngSwitchCase="'IA'" viewBox="0 0 24 24" focusable="false">
+              <path d="M12 3.2a7.5 7.5 0 0 0-7.5 7.5c0 3 1.8 5.5 4.3 6.8v2.1c0 .7.5 1.2 1.2 1.2h4c.7 0 1.2-.5 1.2-1.2v-2.1a7.5 7.5 0 0 0-3.2-14.3Zm0 2.4a5.1 5.1 0 0 1 1.6 10l-.8.3v2.5h-1.6v-2.5l-.8-.3A5.1 5.1 0 0 1 12 5.6Zm-1 2.6h2v2h2v2h-2v2h-2v-2H9v-2h2v-2Z"></path>
+            </svg>
+            <svg *ngSwitchCase="'EX'" viewBox="0 0 24 24" focusable="false">
+              <path d="M7 7.2h2.2v9.6H7v-3.7H5.2v3H3V7.9h2.2v3H7V7.2Zm7.8 0H17v3.7h1.8v-3H21v8.2h-2.2v-3H17v3.7h-2.2V7.2ZM10.2 11h3.6v2h-3.6v-2Z"></path>
+            </svg>
+            <svg *ngSwitchCase="'PF'" viewBox="0 0 24 24" focusable="false">
+              <path d="M12 12.2a4.3 4.3 0 1 0 0-8.6 4.3 4.3 0 0 0 0 8.6Zm0 2.2c-4.1 0-7.4 2.1-7.4 4.6v1.4h14.8V19c0-2.5-3.3-4.6-7.4-4.6Z"></path>
+            </svg>
+            <svg *ngSwitchCase="'BE'" viewBox="0 0 24 24" focusable="false">
+              <path d="M12 20.8s-8.5-4.9-8.5-11A4.8 4.8 0 0 1 12 6.7a4.8 4.8 0 0 1 8.5 3.1c0 6.1-8.5 11-8.5 11Z"></path>
+            </svg>
+            <span *ngSwitchDefault>{{ icon }}</span>
+          </span>
           <div class="app-page-title-copy">
             <h1>{{ title }}</h1>
             <p>{{ subtitle }}</p>

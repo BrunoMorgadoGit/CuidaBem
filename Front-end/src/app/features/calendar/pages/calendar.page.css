@@ -1,0 +1,463 @@
+/* Layout General */
+.calendar-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+
+.calendar-hero-card {
+  background: linear-gradient(135deg, #5B35D9 0%, #3448D9 100%);
+  border-radius: 24px;
+  padding: 24px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 12px 24px rgba(91, 53, 217, 0.25);
+}
+
+.hero-content span {
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.8;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.hero-content h2 {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 0 0 4px 0;
+}
+
+.hero-content p {
+  font-size: 15px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.btn-new-reminder {
+  background: white;
+  color: #5B35D9;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.btn-new-reminder:hover {
+  transform: translateY(-2px);
+}
+
+/* Calendar Card */
+.calendar-card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  color: #1e293b;
+  text-transform: capitalize;
+}
+
+.calendar-header button {
+  background: #f1f5f9;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.2s;
+}
+
+.calendar-header button:hover {
+  background: #e2e8f0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.weekday {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  background: transparent;
+}
+
+.day-cell:hover {
+  background: #f8fafc;
+}
+
+.day-cell.not-current .day-number {
+  opacity: 0.3;
+}
+
+.day-number {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.day-cell.is-today .day-number {
+  color: #3448D9;
+  font-weight: 900;
+}
+
+.day-cell.is-selected {
+  background: #5B35D9;
+}
+
+.day-cell.is-selected .day-number {
+  color: white;
+}
+
+.day-dots {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-more {
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 6px;
+  color: #64748b;
+}
+
+.day-cell.is-selected .dot-more {
+  color: rgba(255,255,255,0.8);
+}
+
+/* Dots Colors */
+.dot-green { background: #10b981; }
+.dot-blue { background: #3b82f6; }
+.dot-orange { background: #f59e0b; }
+.dot-purple { background: #a855f7; }
+.dot-red { background: #ef4444; }
+.dot-yellow { background: #eab308; }
+.dot-gray { background: #94a3b8; }
+
+/* Reminders Section */
+.reminders-section h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  color: #1e293b;
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  background: white;
+  border-radius: 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.reminder-card {
+  display: flex;
+  align-items: flex-start;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.reminder-card.completed {
+  opacity: 0.6;
+}
+
+.reminder-card.late {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: #fef2f2;
+}
+
+.reminder-time {
+  font-size: 15px;
+  font-weight: 800;
+  color: #3448D9;
+  min-width: 50px;
+  padding-top: 2px;
+}
+
+.reminder-card.completed .reminder-time {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.reminder-content {
+  flex: 1;
+}
+
+.reminder-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.category-badge, .status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.category-badge.dot-green { background: #d1fae5; color: #059669; }
+.category-badge.dot-blue { background: #dbeafe; color: #1d4ed8; }
+.category-badge.dot-orange { background: #fef3c7; color: #d97706; }
+.category-badge.dot-purple { background: #f3e8ff; color: #7e22ce; }
+.category-badge.dot-red { background: #fee2e2; color: #b91c1c; }
+.category-badge.dot-yellow { background: #fef9c3; color: #a16207; }
+.category-badge.dot-gray { background: #f1f5f9; color: #475569; }
+
+.status-badge.pending { background: #f1f5f9; color: #475569; }
+.status-badge.completed { background: #d1fae5; color: #059669; }
+.status-badge.late { background: #fee2e2; color: #b91c1c; }
+
+.reminder-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.reminder-card.completed h4 {
+  text-decoration: line-through;
+}
+
+.reminder-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.reminder-content small {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #059669;
+  font-weight: 600;
+}
+
+.reminder-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-icon.check {
+  background: #10b981;
+  color: white;
+}
+.btn-icon.check:hover { background: #059669; }
+
+.btn-icon.edit {
+  background: #f1f5f9;
+  color: #475569;
+}
+.btn-icon.edit:hover { background: #e2e8f0; }
+
+.btn-icon.delete {
+  background: #fee2e2;
+  color: #ef4444;
+}
+.btn-icon.delete:hover { background: #fca5a5; }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+.form-row > label {
+  flex: 1;
+}
+
+.modal-body label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+  outline: none;
+  border-color: #5B35D9;
+  box-shadow: 0 0 0 3px rgba(91, 53, 217, 0.1);
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-cancel {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-save {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #5B35D9;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .calendar-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .btn-new-reminder {
+    width: 100%;
+  }
+}

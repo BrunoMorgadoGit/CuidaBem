@@ -1,4 +1,4 @@
-export type EmergencyContactTone = 'samu' | 'fire' | 'rights' | 'cvv';
+export type EmergencyContactTone = 'samu' | 'fire' | 'police' | 'health' | 'rights' | 'cvv';
 
 export interface EmergencyContact {
   id: string;

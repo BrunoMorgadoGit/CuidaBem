@@ -1,0 +1,212 @@
+<app-page-shell
+  theme="home"
+  title="Perfil do paciente"
+  subtitle="Dados do paciente cuidado e responsáveis pela rotina familiar."
+  icon="PF"
+>
+  <section page-header-extra class="privacy-note">
+    <strong>Informacoes sensiveis</strong>
+    <span>Essas informacoes ajudam na organizacao do cuidado e devem ser mantidas atualizadas.</span>
+  </section>
+
+  <section class="profile-screen">
+    <article class="profile-summary-card" aria-label="Resumo do perfil">
+      <div class="summary-photo">
+        <img *ngIf="profile.photo; else avatarFallback" [src]="profile.photo" alt="Foto do idoso">
+        <ng-template #avatarFallback>
+          <span>{{ initials }}</span>
+        </ng-template>
+      </div>
+
+      <div class="summary-copy">
+        <span>Paciente cuidado</span>
+        <h2>{{ displayName }}</h2>
+        <p>{{ displayAge }}</p>
+        <small>Cuidador: {{ displayCaregiver }}</small>
+      </div>
+
+      <div class="summary-actions">
+        <button type="button" class="btn btn-outline" (click)="toggleDetails()">
+          {{ showDetails ? 'Ocultar dados' : 'Dados do paciente' }}
+        </button>
+        <button type="button" class="btn btn-primary edit-main-button" (click)="editProfile()">Editar perfil</button>
+        <button type="button" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);" (click)="goToCareTeam()">Equipe de Cuidado</button>
+        <button type="button" class="btn logout-button" (click)="logout()">Sair da conta</button>
+      </div>
+    </article>
+
+    <p class="profile-feedback" *ngIf="feedback">{{ feedback }}</p>
+
+    <section class="details-panel" *ngIf="showDetails && !isEditing" aria-label="Dados completos do idoso">
+      <div class="section-heading">
+        <span>Dados do paciente</span>
+        <h2>Informacoes completas</h2>
+      </div>
+
+      <div class="details-grid">
+        <article class="details-card">
+          <h3>Informacoes pessoais</h3>
+          <dl>
+            <div>
+              <dt>Nome</dt>
+              <dd>{{ fallback(profile.fullName) }}</dd>
+            </div>
+            <div>
+              <dt>Idade</dt>
+              <dd>{{ displayAge }}</dd>
+            </div>
+            <div>
+              <dt>Nascimento</dt>
+              <dd>{{ formatBirthDate(profile.birthDate) }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="details-card">
+          <h3>Contatos e rede de apoio</h3>
+          <dl>
+            <div>
+              <dt>Telefone principal</dt>
+              <dd>{{ fallback(profile.phone) }}</dd>
+            </div>
+            <div>
+              <dt>Emergencia</dt>
+              <dd>{{ fallback(profile.emergencyPhone) }}</dd>
+            </div>
+            <div>
+              <dt>Cuidador principal</dt>
+              <dd>{{ fallback(profile.mainCaregiver) }}</dd>
+            </div>
+            <div>
+              <dt>Familiar responsavel</dt>
+              <dd>{{ fallback(profile.responsibleFamilyMember) }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="details-card wide">
+          <h3>Saude</h3>
+          <dl>
+            <div>
+              <dt>Condicoes</dt>
+              <dd>{{ formatList(profile.healthConditions) }}</dd>
+            </div>
+            <div>
+              <dt>Medicamentos</dt>
+              <dd>{{ formatList(profile.medications) }}</dd>
+            </div>
+            <div>
+              <dt>Alergias</dt>
+              <dd>{{ formatList(profile.allergies) }}</dd>
+            </div>
+            <div>
+              <dt>Observacoes</dt>
+              <dd>{{ fallback(profile.notes) }}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="edit-panel" *ngIf="isEditing" aria-label="Formulario de edicao do perfil">
+      <div class="section-heading">
+        <span>Edicao</span>
+        <h2>Atualizar perfil</h2>
+      </div>
+
+      <div class="edit-photo-row">
+        <div class="edit-photo">
+          <img *ngIf="editPhoto; else editAvatarFallback" [src]="editPhoto" alt="Foto selecionada">
+          <ng-template #editAvatarFallback>
+            <span>{{ initials }}</span>
+          </ng-template>
+        </div>
+
+        <div class="photo-edit-actions">
+          <label class="btn btn-primary photo-button">
+            <input type="file" accept="image/*" (change)="onPhotoSelected($event)">
+            {{ editPhoto ? 'Trocar foto' : 'Adicionar foto' }}
+          </label>
+          <button type="button" class="btn btn-outline" (click)="removePhoto()" [disabled]="!editPhoto">
+            Remover foto
+          </button>
+          <small class="field-error" *ngIf="photoError">{{ photoError }}</small>
+        </div>
+      </div>
+
+      <form class="profile-form" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <label class="form-field wide">
+          <span>Nome do paciente *</span>
+          <input type="text" formControlName="fullName" placeholder="Ex: Maria Aparecida">
+          <small class="field-error" *ngIf="fieldError('fullName')">{{ fieldError('fullName') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Idade</span>
+          <input type="number" inputmode="numeric" formControlName="age" min="0" max="130" placeholder="82">
+          <small class="field-error" *ngIf="fieldError('age')">{{ fieldError('age') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Data de nascimento</span>
+          <input type="date" formControlName="birthDate">
+          <small class="field-error" *ngIf="fieldError('birthDate')">{{ fieldError('birthDate') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Telefone principal</span>
+          <input type="tel" formControlName="phone" placeholder="(14) 99999-9999">
+          <small class="field-error" *ngIf="fieldError('phone')">{{ fieldError('phone') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Telefone de emergencia</span>
+          <input type="tel" formControlName="emergencyPhone" placeholder="(14) 98888-8888">
+          <small class="field-error" *ngIf="fieldError('emergencyPhone')">{{ fieldError('emergencyPhone') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Cuidador principal</span>
+          <input type="text" formControlName="mainCaregiver" placeholder="Ex: Bruno">
+          <small class="field-error" *ngIf="fieldError('mainCaregiver')">{{ fieldError('mainCaregiver') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Familiar responsavel</span>
+          <input type="text" formControlName="responsibleFamilyMember" placeholder="Ex: Ana">
+          <small class="field-error" *ngIf="fieldError('responsibleFamilyMember')">{{ fieldError('responsibleFamilyMember') }}</small>
+        </label>
+
+        <label class="form-field wide">
+          <span>Condicoes de saude importantes</span>
+          <input type="text" formControlName="healthConditionsText" placeholder="Hipertensao, Diabetes">
+          <small>Separe os itens por virgula.</small>
+        </label>
+
+        <label class="form-field wide">
+          <span>Medicamentos em uso</span>
+          <input type="text" formControlName="medicationsText" placeholder="Losartana, Metformina">
+          <small>Separe os itens por virgula.</small>
+        </label>
+
+        <label class="form-field wide">
+          <span>Alergias</span>
+          <input type="text" formControlName="allergiesText" placeholder="Dipirona">
+          <small>Separe os itens por virgula.</small>
+        </label>
+
+        <label class="form-field wide">
+          <span>Observacoes gerais</span>
+          <textarea rows="5" formControlName="notes" placeholder="Paciente precisa de auxilio para locomocao."></textarea>
+          <small>{{ notesLength }}/{{ notesLimit }} caracteres</small>
+          <small class="field-error" *ngIf="fieldError('notes')">{{ fieldError('notes') }}</small>
+        </label>
+
+        <div class="form-actions wide">
+          <button type="button" class="btn btn-outline" (click)="cancelEdit()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar alteracoes</button>
+        </div>
+      </form>
+    </section>
+  </section>
+</app-page-shell>

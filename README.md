@@ -1,63 +1,107 @@
 # Projeto CuidaBem
 
-Este projeto foi desenvolvido com foco na gestão do cuidado da pessoa idosa, unificando em um só lugar as necessidades médicas, alimentares, de rotina e o bem-estar do paciente.
+O CuidaBem é uma aplicação para gestão do cuidado da pessoa idosa, reunindo tarefas, lembretes, guias práticos, histórico do cuidado, contatos e recursos de apoio ao cuidador.
 
-## 🚀 Como Executar o Projeto Localmente
+## Estrutura Do Projeto
 
-Siga o passo a passo abaixo para rodar o Back-end e o Front-end simultaneamente em sua máquina, utilizando o banco de dados SQLite (sem necessidade de configurar serviços externos).
+O projeto está separado em duas aplicações principais:
 
-### 1. Pré-requisitos
-- **Node.js** (versão 18 ou superior)
-- **NPM** (versão 8 ou superior)
+- **Servidor/API**: pasta `Back_end`, responsável pela API REST, autenticação, regras de negócio, Prisma e banco de dados MySQL.
+- **Aplicação Web**: pasta `Front-end`, responsável pela interface Angular consumida pelo cuidador/familiar.
 
-### 2. Instalação das dependências
+As duas partes ficam no mesmo repositório, mas possuem dependências, build e execução separados.
 
-Na raiz do projeto (onde está localizado este README), execute o comando abaixo. Ele instalará automaticamente as dependências tanto do back-end quanto do front-end:
+## Como Executar Localmente
+
+### 1. Pré-Requisitos
+
+- **Node.js** 18 ou superior.
+- **npm** 8 ou superior.
+- **MySQL** acessível pela variável `DATABASE_URL`.
+
+### 2. Instalar Dependências
+
+Na raiz do projeto, execute:
 
 ```bash
 npm run install:all
 ```
 
-Se o comando falhar, você pode instalar manualmente entrando em cada pasta:
+Instalação manual:
+
 ```bash
-cd Back_end && npm install
-cd ../Front-end && npm install
+cd Back_end
+npm install
+
+cd ../Front-end
+npm install
+
 cd ..
 ```
 
-### 3. Configuração do Banco de Dados (Back-end)
+### 3. Configurar O Servidor/API
 
-O back-end está configurado para utilizar **SQLite**, ou seja, o banco de dados será um arquivo local (geralmente criado na pasta `Back_end/prisma/dev.db`).
+Crie o arquivo `Back_end/.env` com base em `Back_end/.env.example`.
 
-Para criar as tabelas e popular o banco com os dados iniciais, acesse a pasta `Back_end` e execute as migrações e o seed:
+Exemplo de banco:
+
+```env
+DATABASE_URL="mysql://usuario:senha@localhost:3306/cuidabem"
+PORT=3000
+CORS_ORIGINS=http://localhost:8100
+```
+
+Depois execute as migrações e o seed:
 
 ```bash
 cd Back_end
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
 npm run db:seed
 cd ..
 ```
 
-### 4. Executando a Aplicação
+### 4. Executar Servidor E Aplicação Web
 
-Com tudo instalado e o banco configurado, você pode rodar o Front-end e o Back-end juntos. A partir da **raiz do projeto**, execute:
+Na raiz do projeto:
 
 ```bash
 npm run dev
 ```
 
-Este comando vai iniciar simultaneamente:
-- **O servidor do Back-end** na porta `3000` (http://localhost:3000)
-- **A aplicação Front-end (Angular)** na porta `8100` (http://localhost:8100)
+Esse comando inicia:
 
-Abra o seu navegador e acesse **http://localhost:8100** para interagir com o CuidaBem.
+- **Servidor/API** em `http://localhost:3000`.
+- **Aplicação Web** em `http://localhost:8100`.
 
----
+Abra `http://localhost:8100` no navegador.
 
-### 🛡️ Boas Práticas e Cibersegurança
+## Comandos Úteis
 
-Por questões de segurança e boas práticas de desenvolvimento (LGPD/Cybersecurity):
-- **O banco de dados (.db / .sqlite)** e a pasta `node_modules` não são enviados para o repositório (`GitHub`). Isso previne vazamento de informações médicas ou pessoais de pacientes caso o código fique exposto.
-- Caso você faça o clone do projeto em um novo computador, sempre rode o passo 3 (Configuração do Banco de Dados) para gerar um novo arquivo de banco local limpo e seguro.
-- Nunca adicione variáveis sensíveis (senhas, chaves de API, secrets de JWT) diretamente no código-fonte. Utilize sempre o arquivo local `.env` que, de propósito, é ignorado pelo Git (veja as regras no `.gitignore`).
+```bash
+npm run build:all
+```
+
+Executa o build do servidor e da aplicação web.
+
+```bash
+cd Back_end
+npm run build
+```
+
+Valida apenas o servidor/API.
+
+```bash
+cd Front-end
+npm run build
+```
+
+Valida apenas a aplicação web.
+
+## Boas Práticas De Segurança
+
+- Não versionar `.env`, credenciais, senhas, tokens ou chaves privadas.
+- Manter `JWT_SECRET` forte e fora do código-fonte.
+- Usar HTTPS em produção.
+- Validar dados no servidor/API, mesmo quando o formulário também valida no navegador.
+- Não expor stack trace ou mensagens técnicas internas para usuários finais.

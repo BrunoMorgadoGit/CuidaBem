@@ -5,9 +5,10 @@ export function sendSuccess<T>(
   res: Response,
   data: T,
   message = 'Operação realizada com sucesso.',
-  statusCode = 200
+  statusCode = 200,
+  meta: Record<string, any> = {}
 ): void {
-  const body: ApiResponse<T> = { success: true, data, message, timestamp: new Date().toISOString() };
+  const body: ApiResponse<T> = { success: true, data, message, meta, timestamp: new Date().toISOString() };
   res.status(statusCode).json(body);
 }
 

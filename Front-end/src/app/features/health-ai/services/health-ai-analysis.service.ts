@@ -13,18 +13,13 @@ export interface AnalysisRequest {
 
 export interface AnalysisResponse {
   success: boolean;
-  diagnosis: {
-    riskLevel: 'low' | 'medium' | 'high' | 'critical';
-    findings: string[];
-    recommendations: string[];
-    confidence: number; // 0-100
-    requiresImmediateAttention: boolean;
-  };
-  metadata: {
-    processedAt: string;
-    processingTimeMs: number;
-    aiModel: string;
-  };
+  category: string;
+  riskLevel: 'baixo' | 'moderado' | 'alto';
+  title: string;
+  summary: string;
+  observations: string[];
+  recommendations: string[];
+  warning: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -37,15 +32,19 @@ export class HealthAiAnalysisService {
     try {
       const response = await firstValueFrom(
         this.http.post<AnalysisResponse>(
-          `${environment.apiUrl}/api/health/observations/analyze-image`,
-          request
+          `${environment.apiUrl}/health-ai/analyze`,
+          {
+            category: request.category,
+            imageUrl: request.imageUrl,
+            notes: request.notes
+          }
         ).pipe(
           timeout(this.TIMEOUT_MS)
         )
       );
 
       if (!response.success) {
-        throw new Error(response.diagnosis?.findings?.[0] || 'Análise falhou');
+        throw new Error('Análise falhou no servidor');
       }
 
       return response;

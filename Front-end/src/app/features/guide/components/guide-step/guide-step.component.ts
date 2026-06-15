@@ -8,7 +8,6 @@ import type { CareGuideStep } from '../../models';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './guide-step.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuideStepComponent {
   @Input({ required: true }) step!: CareGuideStep;

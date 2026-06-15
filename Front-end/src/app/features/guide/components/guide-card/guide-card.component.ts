@@ -9,7 +9,6 @@ import type { GuideItem } from '../../models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './guide-card.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GuideCardComponent {
   @Input({ required: true }) item!: GuideItem;

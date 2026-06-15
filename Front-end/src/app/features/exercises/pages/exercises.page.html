@@ -1,28 +1,13 @@
-<app-page-shell theme="exercise" title="Central de Exercicios" subtitle="10 exercicios de mobilidade e fortalecimento" icon="EX">
-  <section page-header-extra class="exercise-progress" aria-label="Sessao de hoje">
+<app-page-shell theme="exercise" title="Central de Exercicios" subtitle="Tutoriais de mobilidade e fortalecimento para rotina recorrente" icon="EX">
+  <section page-header-extra class="exercise-progress" aria-label="Biblioteca educativa">
     <div class="exercise-progress-head">
       <div>
-        <span>Sessao de hoje</span>
-        <strong>{{ completedExercises }}/{{ totalExercises }} exercicios</strong>
+        <span>Biblioteca educativa</span>
+        <strong>{{ totalExercises }} tutoriais recorrentes</strong>
       </div>
-      <button
-        type="button"
-        class="exercise-reset-button"
-        [disabled]="completedExercises === 0"
-        (click)="resetTodaySession()"
-      >
-        Reiniciar sessao de hoje
-      </button>
+      <span class="exercise-video-count">{{ videoExercises }} videos disponiveis</span>
     </div>
-    <i
-      role="progressbar"
-      [attr.aria-label]="completedExercises + ' de ' + totalExercises + ' exercicios concluidos hoje'"
-      [attr.aria-valuenow]="progressPercent"
-      aria-valuemin="0"
-      aria-valuemax="100"
-    >
-      <b [style.width.%]="progressPercent"></b>
-    </i>
+    <p>Exercicios podem ser revistos e realizados todos os dias, sempre com supervisao.</p>
   </section>
 
   <section class="exercise-list" aria-label="Lista de exercicios">
@@ -31,8 +16,7 @@
       class="exercise-card"
       *ngFor="let exercise of exercises; trackBy: trackByExerciseId"
       [ngClass]="exercise.tone"
-      [class.completed]="exercise.completedToday"
-      [attr.aria-label]="'Abrir tutorial de ' + exercise.title + '. Status: ' + (exercise.completedToday ? 'Concluido' : 'Pendente')"
+      [attr.aria-label]="'Abrir tutorial de ' + exercise.title"
       (click)="openExercise(exercise)"
     >
       <span class="exercise-icon">{{ exercise.icon }}</span>
@@ -41,16 +25,16 @@
           {{ exercise.title }}
           <b>{{ exercise.category }}</b>
         </h2>
-        <p>{{ exercise.sets }} series · {{ exercise.reps }}</p>
+        <p>{{ exercise.sets }} · {{ exercise.reps }}</p>
         <small>{{ exercise.description }}</small>
       </div>
       <span class="exercise-card-trailing">
-        <span class="exercise-status" [class.done]="exercise.completedToday">
-          <span aria-hidden="true">{{ exercise.completedToday ? '✓' : '•' }}</span>
-          {{ exercise.completedToday ? 'Concluido' : 'Pendente' }}
+        <span class="exercise-status">
+          <span aria-hidden="true">▶</span>
+          Tutorial
         </span>
-        <span class="exercise-open-label">{{ exercise.completedToday ? 'Rever exercicio' : 'Ver exercicio' }}</span>
-        <span class="exercise-action" aria-hidden="true">{{ exercise.completedToday ? '✓' : '▶' }}</span>
+        <span class="exercise-open-label">Ver video</span>
+        <span class="exercise-action" aria-hidden="true">▶</span>
       </span>
     </button>
   </section>
@@ -71,66 +55,59 @@
         <button type="button" class="exercise-modal-close" aria-label="Fechar tutorial" (click)="closeTutorial()">×</button>
       </header>
 
-      <div class="exercise-modal-body">
-        <ng-container *ngIf="getSafeVideoUrl(exercise) as videoSource; else noExerciseVideo">
-          <div class="exercise-video-frame">
-            <iframe
-              [src]="videoSource"
-              [title]="'Video do exercicio ' + exercise.title"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-          </div>
-        </ng-container>
+      <div class="exercise-detail-body">
+        <!-- Coluna esquerda: vídeo -->
+        <div class="exercise-video-column">
+          <ng-container *ngIf="getSafeVideoUrl(exercise) as videoSource; else noExerciseVideo">
+            <div class="exercise-video-wrapper">
+              <iframe
+                [src]="videoSource"
+                [title]="'Video do exercicio ' + exercise.title"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </ng-container>
 
-        <ng-template #noExerciseVideo>
-          <div class="exercise-video-placeholder">
-            <span aria-hidden="true">▶</span>
-            <strong>Tutorial em texto</strong>
-            <p>Este exercicio ainda nao possui video cadastrado.</p>
-          </div>
-        </ng-template>
+          <ng-template #noExerciseVideo>
+            <div class="exercise-video-placeholder">
+              <span aria-hidden="true">▶</span>
+              <strong>Tutorial em texto</strong>
+              <p>Este exercicio ainda nao possui video cadastrado.</p>
+            </div>
+          </ng-template>
 
-        <div class="exercise-modal-summary" aria-label="Series e repeticoes">
-          <span>{{ exercise.sets }} series</span>
-          <span>{{ exercise.reps }}</span>
-          <span class="done" *ngIf="exercise.completedToday">Concluido</span>
+          <p class="exercise-safety-note">Realize os exercícios com supervisão e interrompa se houver dor, tontura ou falta de ar.</p>
         </div>
 
-        <p class="exercise-modal-description">{{ exercise.description }}</p>
+        <!-- Coluna direita: informações -->
+        <div class="exercise-info-column">
+          <div class="exercise-info-section">
+            <h3 class="exercise-info-section-title">Resumo</h3>
+            <div class="exercise-chips" aria-label="Series e repeticoes">
+              <span class="exercise-chip">{{ exercise.sets }}</span>
+              <span class="exercise-chip">{{ exercise.reps }}</span>
+            </div>
+            <p class="exercise-modal-description">{{ exercise.description }}</p>
+          </div>
 
-        <section class="exercise-tutorial-section">
-          <h3>Passo a passo</h3>
-          <ol>
-            <li *ngFor="let step of exercise.steps">{{ step }}</li>
-          </ol>
-        </section>
+          <div class="exercise-info-section">
+            <h3 class="exercise-info-section-title">Passo a passo</h3>
+            <ol class="exercise-steps-list">
+              <li *ngFor="let step of exercise.steps">{{ step }}</li>
+            </ol>
+          </div>
 
-        <section class="exercise-tutorial-section precautions">
-          <h3>Cuidados importantes</h3>
-          <ul>
-            <li *ngFor="let precaution of exercise.precautions">{{ precaution }}</li>
-          </ul>
-        </section>
+          <div class="exercise-info-section exercise-precautions-card">
+            <h3 class="exercise-info-section-title precaution-title">⚠ Cuidados importantes</h3>
+            <ul class="exercise-precautions-list">
+              <li *ngFor="let precaution of exercise.precautions">{{ precaution }}</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <footer class="exercise-modal-actions">
-        <button
-          *ngIf="!exercise.completedToday"
-          type="button"
-          class="exercise-complete-button"
-          (click)="completeActiveExercise()"
-        >
-          Concluir exercicio
-        </button>
-        <button
-          *ngIf="exercise.completedToday"
-          type="button"
-          class="exercise-undo-button"
-          (click)="undoActiveExerciseCompletion()"
-        >
-          Desfazer conclusao
-        </button>
         <button type="button" class="exercise-secondary-button" (click)="closeTutorial()">Fechar</button>
       </footer>
     </section>

@@ -1,138 +1,340 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Idoso {
-  id                   Int       @id @default(autoincrement())
-  nome                 String
-  data_nascimento      DateTime?
-  cpf                  String    @unique
-  sexo                 String?
-  peso                 Float?
-  condicoes_medicinais String?
-  criado_em            DateTime  @default(now())
-  atualizado_em        DateTime  @updatedAt
-
-  doencas      IdosoDoenca[]
-  medicamentos Medicamento[]
-  alimentacoes Alimentacao[]
-  uploads      MediaUpload[]
-
-  @@index([cpf])
-  @@map("idoso")
+enum UserRole {
+  RESPONSIBLE
+  FAMILY
+  CAREGIVER
+  ADMIN
 }
 
-model Doenca {
-  id          Int     @id @default(autoincrement())
-  nome_doenca String
-  codigo_cid  String?
-  categoria   String?
-
-  idosos IdosoDoenca[]
-
-  @@map("doenca")
+enum PatientMemberRole {
+  RESPONSIBLE
+  FAMILY
+  CAREGIVER
+  NURSE
 }
 
-model IdosoDoenca {
-  id               Int       @id @default(autoincrement())
-  id_doenca        Int
-  id_idoso         Int
-  data_diagnostico DateTime?
-  observacao       String?
-
-  doenca Doenca @relation(fields: [id_doenca], references: [id], onDelete: Cascade)
-  idoso  Idoso  @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
-
-  @@map("idoso_doenca")
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
 }
 
-model Medicamento {
-  id                Int     @id @default(autoincrement())
-  id_idoso          Int
-  nome_medicamento  String
-  via_administracao String?
-  frequencia        String?
-  dosagem           String?
-  horario           String?
-  observacao        String?
+model Account {
+  id        String   @id @default(uuid()) @db.Char(36)
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  idoso Idoso @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
+  users    User[]
+  patients Patient[]
+  members  PatientMember[]
 
-  @@index([id_idoso])
-  @@map("medicamento")
+  @@map("accounts")
 }
 
-model Cuidador {
-  id            Int      @id @default(autoincrement())
-  nome          String
-  email         String   @unique
-  senha_hash    String
-  sexo          String?
-  cpf           String   @unique
-  telefone      String?
-  turno         String?
-  criado_em     DateTime @default(now())
-  atualizado_em DateTime @updatedAt
+model User {
+  id           String   @id @default(uuid()) @db.Char(36)
+  accountId    String   @map("account_id") @db.Char(36)
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  cpf          String?  @unique
+  phone        String?
+  role         UserRole @default(FAMILY)
+  avatarUrl    String?  @map("avatar_url")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
-  acompanhamentos AcompanhamentoCuidador[]
-  alimentacoes    Alimentacao[]
-  uploads         MediaUpload[]
+  account       Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  members       PatientMember[]
+  preferences   UserPreference?
+  refreshTokens RefreshToken[]
+  supportContactsCreated SupportContact[]
 
+  @@index([accountId])
   @@index([email])
-  @@map("cuidador")
+  @@map("users")
 }
 
-model AcompanhamentoCuidador {
-  id            Int       @id @default(autoincrement())
-  id_cuidador   Int
-  humor         String?
-  sono          String?
-  nivel_energia String?
-  observacao    String?
-  dia           DateTime?
+model Patient {
+  id               String        @id @default(uuid()) @db.Char(36)
+  accountId        String        @map("account_id") @db.Char(36)
+  name             String
+  birthDate        DateTime?     @map("birth_date")
+  cpf              String?       @unique
+  sex              String?
+  weight           Float?
+  healthConditions Json?         @map("health_conditions")
+  notes            String?       @db.Text
+  photoUrl         String?       @map("photo_url")
+  status           PatientStatus @default(ACTIVE)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @default(now()) @updatedAt @map("updated_at")
 
-  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Cascade)
+  account         Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  members         PatientMember[]
+  userPreferences UserPreference[]
+  supportContacts SupportContact[]
 
-  @@index([id_cuidador])
-  @@map("acompanhamento_cuidador")
+  @@index([accountId])
+  @@map("patients")
 }
 
-model Alimentacao {
-  id          Int     @id @default(autoincrement())
-  id_cuidador Int
-  id_idoso    Int
-  refeicao    String?
-  horario     String?
-  quantidade  String?
-  observacao  String?
+model PatientMember {
+  id        String            @id @default(uuid()) @db.Char(36)
+  accountId String            @map("account_id") @db.Char(36)
+  patientId String            @map("patient_id") @db.Char(36)
+  userId    String            @map("user_id") @db.Char(36)
+  role      PatientMemberRole @default(CAREGIVER)
+  active    Boolean           @default(true)
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @default(now()) @updatedAt @map("updated_at")
 
-  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Restrict)
-  idoso    Idoso    @relation(fields: [id_idoso], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([id_cuidador])
-  @@index([id_idoso])
-  @@map("alimentacao")
+  @@unique([patientId, userId])
+  @@index([accountId])
+  @@index([userId])
+  @@map("patient_members")
 }
 
-model MediaUpload {
-  id            Int      @id @default(autoincrement())
-  id_cuidador   Int
-  nome_original String
-  caminho       String
-  tipo_mime     String
-  tamanho_bytes Int
-  tipo_midia    String
-  id_idoso      Int?
-  criado_em     DateTime @default(now())
+model UserPreference {
+  id               String   @id @default(uuid()) @db.Char(36)
+  userId           String   @unique @map("user_id") @db.Char(36)
+  currentPatientId String?  @map("current_patient_id") @db.Char(36)
+  theme            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 
-  cuidador Cuidador @relation(fields: [id_cuidador], references: [id], onDelete: Cascade)
-  idoso    Idoso?   @relation(fields: [id_idoso], references: [id], onDelete: SetNull)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentPatient Patient? @relation(fields: [currentPatientId], references: [id], onDelete: SetNull)
 
-  @@map("media_upload")
+  @@index([currentPatientId])
+  @@map("user_preferences")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @map("ip_address")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model GuideCategory {
+  id    String @id
+  title String @map("titulo")
+  order Int    @default(0) @map("ordem")
+
+  guides Guide[]
+
+  @@map("guide_category")
+}
+
+model Guide {
+  id               String   @id
+  slug             String   @unique
+  categoryId       String   @map("id_categoria")
+  title            String   @map("titulo")
+  shortDescription String   @map("descricao_curta") @db.Text
+  icon             String   @map("icone")
+  tone             String   @map("tom")
+  stepsCount       Int?     @map("total_passos")
+  cardMeta         String?  @map("meta_card")
+  hasTips          Boolean  @default(false) @map("possui_dicas")
+  hasVideo         Boolean  @default(false) @map("possui_video")
+  status           String   @default("published")
+  order            Int      @default(0) @map("ordem")
+  createdAt        DateTime @default(now()) @map("criado_em")
+  updatedAt        DateTime @default(now()) @updatedAt @map("atualizado_em")
+
+  category GuideCategory        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sections GuideSection[]
+  videos   GuideTutorialVideo[]
+
+  @@index([categoryId])
+  @@map("guide")
+}
+
+model GuideSection {
+  id            String  @id @default(uuid()) @db.Char(36)
+  guideId       String  @map("id_guia")
+  type          String  @map("tipo")
+  title         String  @map("titulo")
+  description   String? @map("descricao") @db.Text
+  items         Json?   @map("itens")
+  steps         Json?   @map("passos")
+  positionCards Json?   @map("cards_posicao")
+  videoId       String? @map("id_video")
+  order         Int     @default(0) @map("ordem")
+
+  guide Guide          @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  video TutorialVideo? @relation(fields: [videoId], references: [id], onDelete: SetNull)
+
+  @@index([guideId])
+  @@index([videoId])
+  @@map("guide_section")
+}
+
+model TutorialVideo {
+  id          String   @id
+  youtubeId   String   @map("youtube_id")
+  title       String   @map("titulo")
+  description String   @map("descricao") @db.Text
+  externalUrl String   @map("url_externa")
+  source      String?  @map("fonte")
+  order       Int      @default(0) @map("ordem")
+  createdAt   DateTime @default(now()) @map("criado_em")
+
+  guides   GuideTutorialVideo[]
+  sections GuideSection[]
+
+  @@map("tutorial_video")
+}
+
+model GuideTutorialVideo {
+  guideId String @map("id_guia")
+  videoId String @map("id_video")
+  order   Int    @default(0) @map("ordem")
+
+  guide Guide         @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  video TutorialVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@id([guideId, videoId])
+  @@map("guide_tutorial_video")
+}
+
+model Exercise {
+  id          String  @id
+  title       String  @map("titulo")
+  category    String  @map("categoria")
+  icon        String  @map("icone")
+  sets        Int     @map("series")
+  reps        String  @map("repeticoes")
+  description String  @map("descricao") @db.Text
+  videoUrl    String? @map("url_video")
+  steps       Json    @map("passos")
+  precautions Json    @map("cuidados")
+  tone        String  @map("tom")
+  order       Int     @default(0) @map("ordem")
+  active      Boolean @default(true) @map("ativo")
+
+  @@map("exercise")
+}
+
+model EmergencyContact {
+  id     String  @id
+  number String  @map("numero")
+  name   String  @map("nome")
+  detail String  @map("detalhe")
+  tone   String  @map("tom")
+  order  Int     @default(0) @map("ordem")
+  active Boolean @default(true) @map("ativo")
+
+  @@map("emergency_contact")
+}
+
+model SupportContact {
+  id              String   @id @default(uuid()) @db.Char(36)
+  patientId       String   @map("patient_id") @db.Char(36)
+  createdByUserId String?  @map("created_by_user_id") @db.Char(36)
+  name            String   @map("nome")
+  role            String   @map("papel")
+  phone           String   @map("telefone")
+  active          Boolean  @default(true) @map("ativo")
+  createdAt       DateTime @default(now()) @map("criado_em")
+  updatedAt       DateTime @default(now()) @updatedAt @map("atualizado_em")
+
+  patient       Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdByUser User?   @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([patientId])
+  @@index([createdByUserId])
+  @@map("support_contact")
+}
+
+model Task {
+  id                String    @id @default(uuid()) @db.Char(36)
+  patientId         String    @map("patient_id") @db.Char(36)
+  title             String
+  detail            String    @db.Text
+  time              String
+  category          String
+  priority          String
+  status            String    @default("next")
+  icon              String
+  guideId           String?   @map("guide_id")
+  guideRoute        String?   @map("guide_route")
+  createdByUserId   String    @map("created_by_user_id") @db.Char(36)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  completedByUserId String?   @map("completed_by_user_id") @db.Char(36)
+  completedAt       DateTime? @map("completed_at")
+
+  @@index([patientId])
+  @@map("tasks")
+}
+
+model TaskTemplate {
+  id         String  @id @default(uuid()) @db.Char(36)
+  title      String
+  category   String
+  icon       String
+  guideRoute String? @map("guide_route")
+
+  @@map("task_templates")
+}
+
+model ActivityLog {
+  id                String   @id @default(uuid()) @db.Char(36)
+  patientId         String   @map("patient_id") @db.Char(36)
+  taskId            String?  @map("task_id") @db.Char(36)
+  action            String
+  description       String   @db.Text
+  performedByUserId String   @map("performed_by_user_id") @db.Char(36)
+  performedByName   String   @map("performed_by_name")
+  performedByRole   String   @map("performed_by_role")
+  performedAt       DateTime @default(now()) @map("performed_at")
+  details           Json?    @map("details")
+
+  @@index([patientId])
+  @@map("activity_logs")
+}
+
+model CalendarReminder {
+  id          String    @id @default(uuid()) @db.Char(36)
+  patientId   String    @map("patient_id") @db.Char(36)
+  title       String
+  category    String
+  date        String    // YYYY-MM-DD
+  time        String    // HH:MM
+  repeat      String    @default("none")
+  priority    String    @default("normal")
+  notes       String?   @db.Text
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+  completedBy String?   @map("completed_by")
+
+  @@index([patientId])
+  @@map("calendar_reminders")
 }

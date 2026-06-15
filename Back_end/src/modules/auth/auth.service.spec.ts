@@ -4,11 +4,19 @@ import { prisma } from '../../config/database';
 
 vi.mock('../../config/database', () => ({
   prisma: {
-    cuidador: {
+    user: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+    },
+    userPreference: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    patientMember: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
   },
 }));
@@ -21,30 +29,34 @@ describe('AuthService', () => {
     vi.clearAllMocks();
   });
 
-  describe('validarRefreshToken', () => {
-    it('deve retornar null para token invalido', () => {
-      const payload = authService.validarRefreshToken('invalid_token');
-      expect(payload).toBeNull();
-    });
-  });
-
   describe('getMe', () => {
     it('deve retornar o cuidador se encontrado', async () => {
-      const mockCuidador = { id: 1, nome: 'Teste', email: 'teste@email.com' };
-      vi.mocked(prisma.cuidador.findUnique).mockResolvedValue(mockCuidador as any);
+      const mockUser = {
+        id: '1',
+        accountId: 'acc-1',
+        name: 'Teste',
+        email: 'teste@email.com',
+        role: 'RESPONSIBLE',
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+      vi.mocked(prisma.userPreference.findUnique).mockResolvedValue(null as any);
+      vi.mocked(prisma.patientMember.findFirst).mockResolvedValue(null as any);
 
-      const result = await authService.getMe(1);
-      expect(result).toEqual(mockCuidador);
-      expect(prisma.cuidador.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
-        select: expect.any(Object),
+      const result = await authService.getMe('1');
+      expect(result.user.id).toBe(mockUser.id);
+      expect(result.user.name).toBe(mockUser.name);
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: '1' },
       });
     });
 
     it('deve lancar erro se nao encontrar', async () => {
-      vi.mocked(prisma.cuidador.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
-      await expect(authService.getMe(999)).rejects.toThrow('RESOURCE_NOT_FOUND');
+      await expect(authService.getMe('999')).rejects.toThrow('USER_NOT_FOUND');
     });
   });
 });

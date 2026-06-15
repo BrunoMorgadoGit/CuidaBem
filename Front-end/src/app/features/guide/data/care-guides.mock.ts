@@ -5,10 +5,10 @@ const EDUCATIONAL_WARNING = 'Este guia é educativo e não substitui orientaçã
 
 const BED_BATH_VIDEO: TutorialVideo = {
   id: 'video-banho-leito',
-  youtubeId: 'Y0woaElMsXA',
+  youtubeId: 'lGkuGMfDFI8',
   title: 'Banho de leito',
   description: 'Vídeo auxiliar para revisar os cuidados durante o banho no leito.',
-  externalUrl: 'https://www.youtube.com/watch?v=Y0woaElMsXA',
+  externalUrl: 'https://www.youtube.com/watch?v=lGkuGMfDFI8',
   relatedGuideSlug: 'banho-de-leito'
 };
 
@@ -33,19 +33,19 @@ const DIAPER_CHANGE_VIDEO: TutorialVideo = {
 
 const RASH_PREVENTION_VIDEO: TutorialVideo = {
   id: 'video-prevencao-assaduras',
-  youtubeId: 'o16JToC0-_8',
+  youtubeId: 'ono7FGI-MyU',
   title: 'Prevenção de assaduras',
   description: 'Vídeo tutorial com orientações para reduzir umidade, atrito e irritações na pele.',
-  externalUrl: 'https://www.youtube.com/watch?v=o16JToC0-_8',
+  externalUrl: 'https://www.youtube.com/watch?v=ono7FGI-MyU',
   relatedGuideSlug: 'prevencao-assaduras'
 };
 
 const FALL_PREVENTION_VIDEO: TutorialVideo = {
   id: 'video-prevencao-quedas',
-  youtubeId: 'USlT7kzS1FM',
+  youtubeId: '3YyDC203_qg',
   title: 'Prevenção de quedas',
   description: 'Demonstração em vídeo com cuidados para deixar a rotina e o ambiente mais seguros.',
-  externalUrl: 'https://www.youtube.com/watch?v=USlT7kzS1FM',
+  externalUrl: 'https://www.youtube.com/watch?v=3YyDC203_qg',
   relatedGuideSlug: 'prevencao-quedas'
 };
 

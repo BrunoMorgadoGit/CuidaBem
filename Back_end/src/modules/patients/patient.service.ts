@@ -1,80 +1,204 @@
-import { PatientRepository } from './patient.repository';
-import { Task, PatientDashboard, RiskSnapshot, RiskLevel } from './patient.model';
+import { prisma } from '../../config/database';
+import type { CreatePatientDto, UpdatePatientDto } from './patient.schema';
 
+function normalizeName(dto: CreatePatientDto | UpdatePatientDto): string | undefined {
+  return dto.name ?? dto.nome;
+}
+
+function normalizeBirthDate(dto: CreatePatientDto | UpdatePatientDto): Date | null | undefined {
+  if (dto.birthDate !== undefined) return dto.birthDate;
+  if (dto.dataNascimento !== undefined) return dto.dataNascimento;
+  return undefined;
+}
+
+function normalizeHealthConditions(dto: CreatePatientDto | UpdatePatientDto): string[] | undefined {
+  const value = dto.healthConditions ?? dto.condicoesMedicinais;
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) return value;
+  return value.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+export function mapPatient(patient: any | null) {
+  if (!patient) return null;
+
+  return {
+    id: patient.id,
+    accountId: patient.accountId,
+    name: patient.name,
+    birthDate: patient.birthDate ?? undefined,
+    cpf: patient.cpf ?? undefined,
+    sex: patient.sex ?? undefined,
+    weight: patient.weight ?? undefined,
+    healthConditions: Array.isArray(patient.healthConditions) ? patient.healthConditions : [],
+    notes: patient.notes ?? undefined,
+    photoUrl: patient.photoUrl ?? undefined,
+    status: String(patient.status).toLowerCase(),
+    createdAt: patient.createdAt,
+    updatedAt: patient.updatedAt,
+  };
+}
 
 export class PatientService {
-  constructor(private readonly repository: PatientRepository) {}
+  async ensureAccess(userId: string, patientId: string) {
+    const member = await prisma.patientMember.findUnique({
+      where: {
+        patientId_userId: {
+          patientId,
+          userId,
+        },
+      },
+      include: { patient: true, user: true },
+    });
 
-
-
-
-  
-  private calculateRiskSnapshot(tasks: Task[]): RiskSnapshot {
-    if (tasks.length === 0) {
-      return {
-        level: 'baixo',
-        completionRate: 100,
-        totalTasks: 0,
-        completedTasks: 0,
-      };
+    if (!member || !member.active || member.patient.status === 'ARCHIVED') {
+      throw new Error('PATIENT_NOT_FOUND');
     }
 
-    const completedTasks = tasks.filter((t) => t.status === 'done').length;
-    const completionRate = Math.round((completedTasks / tasks.length) * 100);
+    return member;
+  }
 
-    let level: RiskLevel;
-    if (completionRate >= 75) {
-      level = 'baixo';
-    } else if (completionRate >= 50) {
-      level = 'moderado';
-    } else {
-      level = 'elevado';
+  async getCurrent(userId: string) {
+    const preference = await prisma.userPreference.findUnique({
+      where: { userId },
+      include: { currentPatient: true },
+    });
+
+    if (preference?.currentPatient) {
+      const member = await prisma.patientMember.findUnique({
+        where: {
+          patientId_userId: {
+            patientId: preference.currentPatient.id,
+            userId,
+          },
+        },
+      });
+
+      if (member?.active && preference.currentPatient.status === 'ACTIVE') {
+        return mapPatient(preference.currentPatient);
+      }
     }
 
-    return {
-      level,
-      completionRate,
-      totalTasks: tasks.length,
-      completedTasks,
-    };
+    const firstMember = await prisma.patientMember.findFirst({
+      where: {
+        userId,
+        active: true,
+        patient: { status: 'ACTIVE' },
+      },
+      include: { patient: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (!firstMember) throw new Error('CURRENT_PATIENT_NOT_FOUND');
+
+    await prisma.userPreference.upsert({
+      where: { userId },
+      update: { currentPatientId: firstMember.patientId },
+      create: { userId, currentPatientId: firstMember.patientId },
+    });
+
+    return mapPatient(firstMember.patient);
   }
 
+  async findAll(userId: string) {
+    const members = await prisma.patientMember.findMany({
+      where: {
+        userId,
+        active: true,
+        patient: { status: { not: 'ARCHIVED' } },
+      },
+      include: { patient: true },
+      orderBy: { createdAt: 'asc' },
+    });
 
-
-
-  
-  getDashboard(patientId: string): PatientDashboard | null {
-    const patient = this.repository.findPatientById(patientId);
-    if (!patient) return null;
-
-    const dailyTasks = this.repository.findTasksByPatientId(patientId);
-    const riskSnapshot = this.calculateRiskSnapshot(dailyTasks);
-
-    return { patient, dailyTasks, riskSnapshot };
+    return members.map((member: any) => mapPatient(member.patient));
   }
 
-  
-  toggleTaskStatus(
-    patientId: string,
-    taskId: string
-  ): { dashboard: PatientDashboard; message: string } | null {
+  async findById(userId: string, patientId: string) {
+    const member = await this.ensureAccess(userId, patientId);
+    return mapPatient(member.patient);
+  }
 
-    const patient = this.repository.findPatientById(patientId);
-    if (!patient) return null;
+  async create(userId: string, dto: CreatePatientDto) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.active) throw new Error('USER_NOT_FOUND');
 
-    const task = this.repository.findTaskByIds(patientId, taskId);
-    if (!task) return null;
+    const patient = await prisma.patient.create({
+      data: {
+        accountId: user.accountId,
+        name: normalizeName(dto)!,
+        birthDate: normalizeBirthDate(dto) ?? null,
+        cpf: dto.cpf ?? null,
+        sex: dto.sex ?? dto.sexo ?? null,
+        weight: dto.weight ?? dto.peso ?? null,
+        healthConditions: normalizeHealthConditions(dto) ?? [],
+        notes: dto.notes ?? null,
+        photoUrl: dto.photoUrl ?? null,
+        members: {
+          create: {
+            accountId: user.accountId,
+            userId,
+            role: 'RESPONSIBLE',
+          },
+        },
+      },
+    });
 
-    const previousStatus = task.status;
-    const newStatus: Task['status'] = previousStatus === 'done' ? 'upcoming' : 'done';
-    this.repository.updateTaskStatus(taskId, newStatus);
+    await prisma.userPreference.upsert({
+      where: { userId },
+      update: { currentPatientId: patient.id },
+      create: { userId, currentPatientId: patient.id },
+    });
 
-    const updatedDashboard = this.getDashboard(patientId);
-    if (!updatedDashboard) return null;
+    return mapPatient(patient);
+  }
 
-    const action = newStatus === 'done' ? 'concluída' : 'reaberta';
-    const message = `Tarefa "${task.title}" ${action} com sucesso. Risco atualizado para: ${updatedDashboard.riskSnapshot.level}.`;
+  async update(userId: string, patientId: string, dto: UpdatePatientDto) {
+    await this.ensureAccess(userId, patientId);
 
-    return { dashboard: updatedDashboard, message };
+    const patient = await prisma.patient.update({
+      where: { id: patientId },
+      data: {
+        ...(normalizeName(dto) !== undefined ? { name: normalizeName(dto) } : {}),
+        ...(normalizeBirthDate(dto) !== undefined ? { birthDate: normalizeBirthDate(dto) } : {}),
+        ...(dto.cpf !== undefined ? { cpf: dto.cpf } : {}),
+        ...(dto.sex !== undefined || dto.sexo !== undefined ? { sex: dto.sex ?? dto.sexo } : {}),
+        ...(dto.weight !== undefined || dto.peso !== undefined ? { weight: dto.weight ?? dto.peso } : {}),
+        ...(normalizeHealthConditions(dto) !== undefined ? { healthConditions: normalizeHealthConditions(dto) } : {}),
+        ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+        ...(dto.photoUrl !== undefined ? { photoUrl: dto.photoUrl } : {}),
+      },
+    });
+
+    return mapPatient(patient);
+  }
+
+  async delete(userId: string, patientId: string) {
+    await this.ensureAccess(userId, patientId);
+
+    await prisma.patient.update({
+      where: { id: patientId },
+      data: { status: 'ARCHIVED' },
+    });
+
+    const preference = await prisma.userPreference.findUnique({ where: { userId } });
+    if (preference?.currentPatientId === patientId) {
+      const nextMember = await prisma.patientMember.findFirst({
+        where: {
+          userId,
+          active: true,
+          patient: { status: 'ACTIVE', id: { not: patientId } },
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      await prisma.userPreference.update({
+        where: { userId },
+        data: { currentPatientId: nextMember?.patientId ?? null },
+      });
+    }
+
+    return { id: patientId, deleted: true };
   }
 }
+
+export const patientService = new PatientService();

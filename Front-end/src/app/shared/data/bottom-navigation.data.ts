@@ -38,12 +38,21 @@ export const BOTTOM_NAV_ITEMS: readonly BottomNavItem[] = [
     borderColor: 'rgba(160, 0, 238, 0.24)'
   },
   {
-    id: 'nav-wellness',
-    label: 'Bem-estar',
-    icon: 'BE',
-    link: '/tabs/profile',
+    id: 'nav-profile',
+    label: 'Perfil',
+    icon: 'PF',
+    link: '/perfil',
     color: '#00B86B',
     softColor: '#E9FFF3',
     borderColor: 'rgba(0, 184, 107, 0.24)'
+  },
+  {
+    id: 'nav-calendar',
+    label: 'Calendario',
+    icon: 'CAL',
+    link: '/tabs/calendario',
+    color: '#5B35D9',
+    softColor: '#F1E8FF',
+    borderColor: 'rgba(91, 53, 217, 0.24)'
   }
 ];

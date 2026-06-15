@@ -34,7 +34,6 @@ const ERROR_PAGE_CONTENT: Record<ErrorKind, ErrorPageContent> = {
   imports: [CommonModule, RouterLink],
   templateUrl: './error.page.html',
   styleUrls: ['./error.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ErrorPage {
   private readonly route = inject(ActivatedRoute);

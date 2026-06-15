@@ -57,6 +57,13 @@
           message="Preencha os campos destacados antes de continuar."
         ></app-state>
 
+        <app-state
+          *ngIf="addTaskError"
+          type="error"
+          title="Atenção"
+          [message]="addTaskError"
+        ></app-state>
+
         <label *ngIf="isRegister">
           <span>Nome completo</span>
           <input

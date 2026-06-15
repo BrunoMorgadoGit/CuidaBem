@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { AuthSessionService } from '../../../core/services/auth-session.service';
+import { ActivityLogService, PatientService, TaskService, UserService } from '../../../core/services';
 import { AppStateComponent, PageShellComponent } from '../../../shared/components';
 import { trackById } from '../../../shared/utils';
 import type { WellnessCheckInDraft, WellnessOption, WellnessQuestion } from '../models';
@@ -26,11 +28,15 @@ interface CaregiverCheckIn {
   imports: [AppStateComponent, CommonModule, PageShellComponent],
   templateUrl: './wellness.page.html',
   styleUrls: ['./wellness.page.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WellnessPage {
   private readonly wellnessService = inject(WellnessService);
-  private readonly router = inject(Router);
+  private readonly authSession = inject(AuthSessionService);
+  private readonly userService = inject(UserService, { optional: true });
+  private readonly patientService = inject(PatientService, { optional: true });
+  private readonly taskService = inject(TaskService, { optional: true });
+  private readonly activityLogService = inject(ActivityLogService, { optional: true });
+  private readonly router = inject(Router, { optional: true });
 
   readonly checkinGroups = this.wellnessService.getQuestions();
   readonly trackByQuestionId = trackById<WellnessQuestion>;
@@ -140,10 +146,16 @@ export class WellnessPage {
     return this.selectedEnergy;
   }
 
-  private persistCheckIn(_checkin: CaregiverCheckIn): void {}
+  private persistCheckIn(_checkin: CaregiverCheckIn): void { }
 
   logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/onboarding']);
+    this.authSession.clearSession();
+    this.userService?.clearCurrentUser();
+    this.patientService?.clearCurrentPatient();
+    this.taskService?.clearLocalState();
+    this.activityLogService?.clearLocalState();
+    if (this.router) {
+      this.router.navigate(['/onboarding']);
+    }
   }
 }
