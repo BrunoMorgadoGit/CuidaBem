@@ -1,4 +1,4 @@
-export type CaregiverRole = 'responsible' | 'family' | 'caregiver' | 'nurse';
+export type CaregiverRole = 'responsible' | 'family';
 
 export interface CareTeamMember {
   id: string;
@@ -19,14 +19,10 @@ export interface CareTeamMember {
 
 export const CAREGIVER_ROLE_LABELS: Record<CaregiverRole, string> = {
   responsible: 'Cuidador Principal',
-  family: 'Familiar',
-  caregiver: 'Cuidador',
-  nurse: 'Enfermeiro(a)'
+  family: 'Familiar'
 };
 
 export const CAREGIVER_ROLE_OPTIONS: { value: CaregiverRole; label: string }[] = [
   { value: 'responsible', label: 'Cuidador Principal' },
-  { value: 'family', label: 'Familiar' },
-  { value: 'caregiver', label: 'Cuidador' },
-  { value: 'nurse', label: 'Enfermeiro(a)' }
+  { value: 'family', label: 'Familiar' }
 ];
